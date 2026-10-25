@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useAction, useQuery } from "convex/react";
-import { Copy } from "lucide-react";
+import { Link } from "react-router";
+import { ChevronRight } from "lucide-react";
 import { api } from "@convex/_generated/api";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,8 +10,9 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { errorMessage } from "@/lib/errors";
+import { SecretOnce } from "@/pages/AppPage";
 
-/** Admin only: register an app and show its secret once. The full Apps section is build step 3. */
+/** Admin only: the registered apps, and a form to add one (its secret is shown once). */
 function Registry() {
   const apps = useQuery(api.apps.list);
   const create = useAction(api.apps.create);
@@ -55,33 +56,23 @@ function Registry() {
           apps.length > 0 && (
             <ul className="divide-y text-sm">
               {apps.map((a) => (
-                <li key={a._id} className="flex flex-wrap items-center gap-2 py-2">
-                  <span className="font-medium">{a.name}</span>
-                  <code className="text-muted-foreground">{a.slug}</code>
-                  {!a.enabled && <Badge variant="secondary">Disabled</Badge>}
-                  <a href={a.siteUrl} target="_blank" rel="noreferrer" className="ml-auto text-primary underline-offset-4 hover:underline">
-                    {new URL(a.siteUrl).host}
-                  </a>
+                <li key={a._id}>
+                  <Link to={`/apps/${a.slug}`} className="flex flex-wrap items-center gap-2 py-2 hover:bg-muted/50 -mx-2 px-2 rounded-md">
+                    <span className="font-medium">{a.name}</span>
+                    <code className="text-muted-foreground">{a.slug}</code>
+                    {!a.enabled && <Badge variant="secondary">Disabled</Badge>}
+                    <span className="ml-auto text-muted-foreground">
+                      {a.toolCount === null ? "Not fetched" : `${a.toolCount} tool${a.toolCount === 1 ? "" : "s"}`}
+                    </span>
+                    <ChevronRight className="size-4 text-muted-foreground" />
+                  </Link>
                 </li>
               ))}
             </ul>
           )
         )}
 
-        {secret && (
-          <Alert>
-            <AlertTitle>App secret, shown once</AlertTitle>
-            <AlertDescription className="space-y-2">
-              <p>Set it on the app's Convex deployment as KUNJI_SECRET. kunji keeps only a hash and an encrypted copy.</p>
-              <div className="flex items-center gap-2">
-                <code className="break-all rounded bg-muted px-2 py-1 text-xs">{secret}</code>
-                <Button variant="ghost" size="icon" aria-label="Copy secret" onClick={() => void navigator.clipboard.writeText(secret)}>
-                  <Copy />
-                </Button>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
+        {secret && <SecretOnce secret={secret} />}
 
         <form onSubmit={submit}>
           <FieldGroup>

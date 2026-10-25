@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { Shell } from "@/components/Shell";
 import { Spinner } from "@/components/ui/spinner";
+import { AppPage } from "@/pages/AppPage";
 import { AppsPage } from "@/pages/AppsPage";
 import { KeysPage } from "@/pages/KeysPage";
 import { SectionPage } from "@/pages/SectionPage";
@@ -30,6 +31,7 @@ export default function App() {
                 element={<SectionPage title="Connect" description="Tokens and setup for Claude, Cursor, Siri and other AI clients." />}
               />
               <Route path="/apps" element={<AppsPage />} />
+              <Route path="/apps/:slug" element={<AppPage />} />
               <Route path="*" element={<Navigate to="/keys" replace />} />
             </Route>
           </Routes>

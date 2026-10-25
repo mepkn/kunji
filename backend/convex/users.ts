@@ -22,3 +22,8 @@ export const current = internalQuery({
     return user === null ? null : { userId: user._id, isAdmin: isAdminEmail(user.email) };
   },
 });
+
+export const emailOf = internalQuery({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => (await ctx.db.get(userId))?.email ?? "",
+});

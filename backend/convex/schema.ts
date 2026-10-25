@@ -54,4 +54,22 @@ export default defineSchema({
   })
     .index("by_slug", ["slug"])
     .index("by_secretHash", ["secretHash"]),
+
+  // Each app's GET /kunji/tools, cached (admin Refresh now; every few hours from step 4).
+  appTools: defineTable({
+    appId: v.id("apps"),
+    tools: v.array(v.object({ name: v.string(), description: v.string(), inputSchema: v.any() })),
+    fetchedAt: v.number(),
+    error: v.optional(v.string()),
+  }).index("by_app", ["appId"]),
+
+  // Every tool call kunji makes, for the Activity page.
+  toolCalls: defineTable({
+    userId: v.id("users"),
+    appId: v.id("apps"),
+    tool: v.string(),
+    ok: v.boolean(),
+    error: v.optional(v.string()),
+    at: v.number(),
+  }).index("by_user_at", ["userId", "at"]),
 });

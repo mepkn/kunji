@@ -142,10 +142,16 @@ server. All three require `Authorization: Bearer <KUNJI_SECRET>` (constant-time 
 |---|---|---|
 | `GET /kunji/tools` | | `[{ name, description, inputSchema }]` (JSON Schema) |
 | `POST /kunji/access` | `{ userEmail }` | `{ status: "ok" \| "no_account" \| "not_allowed" }` |
-| `POST /kunji/call` | `{ tool, input, userEmail }` | `{ ok: true, result }` or `{ ok: false, error }` |
+| `POST /kunji/call` | `{ tool, input, userEmail }` | `{ ok: true, result }` or `{ ok: false, error: { code, message } }` |
 
 - The app finds the user by email in its own users table and runs the tool **as that user**,
   through internal queries/mutations it already has. Its `ALLOWED_EMAILS` check still applies.
+- A wrong or missing secret is `401`; a body without `userEmail` (or `tool`) is `400`. Everything
+  else is `200`: `error.code` is `no_account`, `not_allowed`, `unknown_tool`, `bad_input` (checked
+  against the tool's `inputSchema`) or `tool_error` (a `ConvexError`'s message, else "The tool failed.").
+- "The user" is the single **verified** `users` row with that email (none or several → `no_account`),
+  and `not_allowed` when that email has left the app's `ALLOWED_EMAILS`. Same rule as kunji's gateway.
+- Tool names are snake_case (`^[a-z][a-z0-9_]{0,63}$`); kunji refuses a list that breaks this.
 - Results are small JSON; kunji turns them into MCP content.
 - A shared helper (`convex/lib/kunji.ts`: auth check, route wiring, tool registry) is copied
   between apps, like the shadcn setup. The first app (karya) is its reference; karya's
@@ -237,9 +243,23 @@ something worth asking for.
    - karya: `lib/kunji.ts` client (`KUNJI_URL`, `KUNJI_SECRET`), AI keys gone from Settings.
      A one-off `clearAiKeys` migration removed the old keys and `aiCalls` rows on prod
      (2026-10-25); the fields, the table and the migration were then removed from karya.
-3. App registry + app contract + `convex/lib/kunji.ts`; **karya** as the first app (already
+3. ✔ App registry + app contract + `convex/lib/kunji.ts`; **karya** as the first app (already
    registered, reuses its `KUNJI_SECRET`; add email verification to karya first if missing).
-   No other app in this step.
+   No other app in this step. Done locally 2026-10-26 (not yet deployed). Notes:
+   - Registry: each app has an admin page `/apps/:slug` (edit, Disable, Rotate secret, Refresh,
+     cached tools, **Try a tool**). Disabling refuses the app's secret at the gateway and stops
+     kunji calling it. Renaming the slug renames the tool prefix.
+   - kunji's client is `backend/convex/lib/appClient.ts` (typed `AppError`: `unreachable`,
+     `timeout`, `unauthorized`, `bad_response`; 10 s, 30 s for calls). `appTools` caches each
+     app's list; `toolCalls` logs every call (Try a tool today, `/mcp` later).
+   - App side: karya's `backend/convex/lib/kunji.ts` holds `addKunjiRoutes`, `secretMatches`
+     (SHA-256 both, then XOR compare), `checkInput` (object, required, primitive types, enums)
+     and `findKunjiUser`; the app adds an `access` internalQuery wrapping `findKunjiUser` and a
+     `tools` list in `convex/kunji.ts`. Tested with convex-test (`kunji.test.ts`).
+   - karya tools (read-only): `list_tickets`, `get_ticket`, `current_focus`, `calibration_summary`,
+     built on the helpers the app's own queries use.
+   - karya got email verification (`otp.ts`, from `Karya <noreply@send.pknspace.com>`) and a one-off
+     `migrations:markUsersVerified` (run locally; to run on prod at deploy, then remove).
 4. Browse page, tokens, `/mcp`, Connect page; test with Claude Code.
 5. Other apps, later and one at a time (picki, yaad-dila, note-shote, ...), each copying
    karya's `lib/kunji.ts` and getting email verification first.

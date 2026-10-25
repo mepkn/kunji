@@ -16,6 +16,7 @@ import type * as http from "../http.js";
 import type * as lib_access from "../lib/access.js";
 import type * as lib_actionAuth from "../lib/actionAuth.js";
 import type * as lib_allowlist from "../lib/allowlist.js";
+import type * as lib_appClient from "../lib/appClient.js";
 import type * as lib_crypto from "../lib/crypto.js";
 import type * as lib_gateway from "../lib/gateway.js";
 import type * as lib_providers from "../lib/providers.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   "lib/access": typeof lib_access;
   "lib/actionAuth": typeof lib_actionAuth;
   "lib/allowlist": typeof lib_allowlist;
+  "lib/appClient": typeof lib_appClient;
   "lib/crypto": typeof lib_crypto;
   "lib/gateway": typeof lib_gateway;
   "lib/providers": typeof lib_providers;

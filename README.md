@@ -15,8 +15,9 @@ See [SPEC.md](SPEC.md) for the full design and build order.
   person's email, and kunji answers with that person's own key in one common shape for every
   provider. Karya is the first app on it.
 - **Usage**: calls and tokens per app per day.
-- **Apps**: admins (`ADMIN_EMAILS`) register an app and get its secret, shown once. **Connect**
-  is still empty.
+- **Apps**: admins (`ADMIN_EMAILS`) register an app and get its secret, shown once; each app's
+  page edits it, disables it, rotates its secret, refreshes its cached tools and has a **Try a
+  tool** box that runs a tool as you. **Connect** is still empty.
 
 ## Stack
 
@@ -117,14 +118,23 @@ try_files {path} /index.html
 - An app's secret (`kjs_…`) comes from the admin form on **Apps**; set it on the app's Convex
   deployment as `KUNJI_SECRET`, with `KUNJI_URL` = kunji's `.convex.site` URL.
 
+### Calling apps
+
+- `lib/appClient.ts` calls an app's `GET /kunji/tools`, `POST /kunji/access` and
+  `POST /kunji/call` with the decrypted secret (10 s timeout, 30 s for calls). Transport
+  failures are `AppError`s: `unreachable`, `timeout`, `unauthorized` (the app refused the
+  secret), `bad_response`. A tool's own failure comes back as `{ ok: false, error: { code, message } }`.
+- **Refresh** stores the tool list in `appTools` (a failed refresh keeps the old list and shows
+  the error). **Try a tool** runs as the admin's own email and logs a `toolCalls` row.
+
 ### Code map
 
 - `backend/convex/`: `auth.ts` + `otp.ts` (sign-in, email codes), `users.ts` (`me`: email and
   admin flag), `lib/allowlist.ts`, `lib/access.ts` and `lib/actionAuth.ts`, `schema.ts`.
   `aiKeys.ts` (list/test/save/remove keys, order), `gateway.ts` (the HTTP action, rate limit),
-  `apps.ts` (registry), `usage.ts`; `lib/crypto.ts` + `lib/secrets.ts`, `lib/providers.ts`,
+  `apps.ts` (registry, refresh, try a tool), `usage.ts`; `lib/appClient.ts`, `lib/crypto.ts` + `lib/secrets.ts`, `lib/providers.ts`,
   `lib/gateway.ts`. Tests in `backend/tests/`.
 - `web/` is the Vite app; it imports the backend as `@convex/...` and reads `backend/.env.local`.
   `src/pages/SignInPage.tsx` runs the sign-in / sign-up / code / reset steps;
   `src/components/Shell.tsx` is the signed-in layout with `/keys` (`KeysPage`), `/usage`,
-  `/connect` and `/apps` (`AppsPage`, with the admin registry).
+  `/connect`, `/apps` (`AppsPage`, with the admin registry) and `/apps/:slug` (`AppPage`, admin).
