@@ -8,8 +8,15 @@ See [SPEC.md](SPEC.md) for the full design and build order.
 
 - Sign-in with email + password; sign-up needs a 6-digit code sent by email, and "Forgot
   password?" resets it with a code too. Only emails in `ALLOWED_EMAILS` can sign up or sign in.
-- Admins (`ADMIN_EMAILS`) will manage the app registry.
-- Three sections, still empty: **AI keys**, **Connect** (tokens and client setup) and **Apps**.
+- **AI keys**: save your own key for Anthropic, OpenAI, Gemini, Groq or any OpenAI-compatible API
+  (name + base URL + model). Each key is tested before it is saved, stored encrypted and shown
+  only as `sk-ant-…F3x9`; reorder them to set the preferred provider and fallback order.
+- **AI gateway**: apps call `POST /ai/v1/generate` server to server with their secret and the
+  person's email, and kunji answers with that person's own key in one common shape for every
+  provider. Karya is the first app on it.
+- **Usage**: calls and tokens per app per day.
+- **Apps**: admins (`ADMIN_EMAILS`) register an app and get its secret, shown once. **Connect**
+  is still empty.
 
 ## Stack
 
@@ -29,6 +36,7 @@ npm run setup:auth           # first time only: auth signing keys
 npx convex env set SITE_URL http://localhost:5173
 npx convex env set ALLOWED_EMAILS you@example.com
 npx convex env set ADMIN_EMAILS you@example.com
+openssl rand -base64 32 | xargs npx convex env set ENCRYPTION_KEY   # encrypts AI keys and app secrets
 
 cd ../web
 npm install
@@ -42,10 +50,11 @@ npm run dev                  # web app at http://localhost:5173
 | `backend/`: `npm run dev` | Local Convex backend; pushes `convex/` on every change |
 | `backend/`: `npm run deploy` | Push the functions to production (`scripts/deploy.sh` does this for you) |
 | `backend/`: `npm run setup:auth` | Auth signing keys (`node scripts/setup-auth-keys.ts --apply --prod` for production) |
-| `backend/`: `npm run check` | Typecheck and lint `convex/` and `scripts/` |
+| `backend/`: `npm run test` | Vitest: encryption, the gateway's request/response mapping and errors |
+| `backend/`: `npm run check` | Typecheck, lint and tests |
 | `web/`: `npm run dev` | Dev server at http://localhost:5173 |
 | `web/`: `npm run build` | Typecheck and production build into `web/dist/` |
-| `web/`: `npm run check` | Typecheck, lint and tests (Vitest: sign-in error messages) |
+| `web/`: `npm run check` | Typecheck, lint and tests (Vitest: sign-in error messages, key masking) |
 | `scripts/check.sh` | Both checks; run before committing |
 | `scripts/deploy.sh` | Checks, deploys Convex to production, builds and uploads to the VPS |
 | `DRY_RUN=1 scripts/deploy.sh` | Same, but only previews: nothing is deployed or uploaded |
@@ -77,11 +86,45 @@ try_files {path} /index.html
   (`backend/convex/lib/access.ts`), so removing an email cuts off existing sessions.
   `requireAdmin` also checks `ADMIN_EMAILS`.
 - Production env vars: `JWT_PRIVATE_KEY`/`JWKS` (`node scripts/setup-auth-keys.ts --apply --prod`
-  in `backend/`), `SITE_URL=https://kunji.pknspace.com`, `ALLOWED_EMAILS`, `ADMIN_EMAILS` and
-  `RESEND_API_KEY`.
+  in `backend/`), `SITE_URL=https://kunji.pknspace.com`, `ALLOWED_EMAILS`, `ADMIN_EMAILS`,
+  `RESEND_API_KEY` and `ENCRYPTION_KEY` (32 random bytes, base64; changing it makes saved keys
+  and app secrets unreadable).
+
+### AI keys and the gateway
+
+- Keys are AES-GCM encrypted with `ENCRYPTION_KEY` (`lib/crypto.ts`, ported from karya) and
+  decrypted only inside actions; queries return the provider and last 4 characters.
+- `POST https://<deployment>.convex.site/ai/v1/generate` with `Authorization: Bearer <app secret>`:
+
+  ```
+  request:  { userEmail, provider?: "auto" | "<id>", model?: "fast" | "smart" | "<exact id>",
+              system?, messages: [{ role: "user" | "assistant", content }],
+              tools?, json?: <JSON Schema>, maxTokens?, temperature? }
+  response: { text, json?, toolCalls?, provider, model, usage: { inputTokens, outputTokens } }
+  error:    { error: { code, message } }   code: unauthorized | bad_request | no_key |
+                                           key_refused | rate_limited | provider_error
+  ```
+
+  The secret is looked up by its SHA-256 hash, the person by email (and `ALLOWED_EMAILS`). Their
+  keys are tried in their order; any failure moves to the next key, and when all fail the first
+  error's code is returned. A busy (5xx or timeout) `fast` model is retried once on `smart`.
+  No key saved, or no kunji account, is `no_key`: "Add your AI key at kunji.pknspace.com".
+- 20 calls a minute per person per app; every call is a row in `aiCalls` (the Usage page).
+- `lib/providers.ts` names every provider and the `fast` / `smart` models; change models there.
+  `lib/gateway.ts` has the two adapters: OpenAI-compatible Chat Completions (OpenAI, Groq,
+  Gemini's OpenAI endpoint, Custom) and Anthropic's native Messages API (structured outputs for
+  `json`, `anthropic-version: 2026-10-21`, so `temperature` is not sent).
+- An app's secret (`kjs_…`) comes from the admin form on **Apps**; set it on the app's Convex
+  deployment as `KUNJI_SECRET`, with `KUNJI_URL` = kunji's `.convex.site` URL.
+
+### Code map
 
 - `backend/convex/`: `auth.ts` + `otp.ts` (sign-in, email codes), `users.ts` (`me`: email and
-  admin flag), `lib/allowlist.ts` and `lib/access.ts`, `schema.ts` (auth tables only so far).
+  admin flag), `lib/allowlist.ts`, `lib/access.ts` and `lib/actionAuth.ts`, `schema.ts`.
+  `aiKeys.ts` (list/test/save/remove keys, order), `gateway.ts` (the HTTP action, rate limit),
+  `apps.ts` (registry), `usage.ts`; `lib/crypto.ts` + `lib/secrets.ts`, `lib/providers.ts`,
+  `lib/gateway.ts`. Tests in `backend/tests/`.
 - `web/` is the Vite app; it imports the backend as `@convex/...` and reads `backend/.env.local`.
   `src/pages/SignInPage.tsx` runs the sign-in / sign-up / code / reset steps;
-  `src/components/Shell.tsx` is the signed-in layout with `/keys`, `/connect` and `/apps`.
+  `src/components/Shell.tsx` is the signed-in layout with `/keys` (`KeysPage`), `/usage`,
+  `/connect` and `/apps` (`AppsPage`, with the admin registry).

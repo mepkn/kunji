@@ -1,18 +1,19 @@
 import { NavLink, Outlet } from "react-router";
 import { useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { AppWindow, KeyRound, LogOut, Plug } from "lucide-react";
+import { AppWindow, BarChart3, KeyRound, LogOut, Plug } from "lucide-react";
 import { api } from "@convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const sections = [
   { to: "/keys", label: "AI keys", icon: KeyRound },
+  { to: "/usage", label: "Usage", icon: BarChart3 },
   { to: "/connect", label: "Connect", icon: Plug },
   { to: "/apps", label: "Apps", icon: AppWindow },
 ];
 
-/** The signed-in layout: top bar with the three sections, page below. */
+/** The signed-in layout: top bar with the sections, page below. */
 export function Shell() {
   const me = useQuery(api.users.me);
   const { signOut } = useAuthActions();
@@ -30,6 +31,7 @@ export function Shell() {
               <NavLink
                 key={to}
                 to={to}
+                aria-label={label}
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground",
@@ -38,7 +40,7 @@ export function Shell() {
                 }
               >
                 <Icon className="size-4" />
-                {label}
+                <span className="hidden sm:inline">{label}</span>
               </NavLink>
             ))}
           </nav>
