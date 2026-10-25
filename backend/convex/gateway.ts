@@ -8,16 +8,21 @@ import { decryptSecret, sha256Hex } from "./lib/secrets";
 
 const RATE_LIMIT_PER_MINUTE = 20;
 
-/** The kunji user with this email, if they may still use kunji. */
+/**
+ * The kunji user with this verified email, if they may still use kunji. An
+ * unverified sign-up leaves its own users row with the same email, so only a
+ * single verified row counts (the rule Convex Auth uses to link accounts).
+ */
 export const userByEmail = internalQuery({
   args: { email: v.string() },
   handler: async (ctx, { email }) => {
     if (!isAllowedEmail(email)) return null;
-    const user = await ctx.db
+    const users = await ctx.db
       .query("users")
       .withIndex("email", (q) => q.eq("email", email))
-      .first();
-    return user?._id ?? null;
+      .filter((q) => q.neq(q.field("emailVerificationTime"), undefined))
+      .take(2);
+    return users.length === 1 ? users[0]._id : null;
   },
 });
 
