@@ -206,7 +206,34 @@ something worth asking for.
    - `ADMIN_EMAILS` gates `requireAdmin` (`lib/access.ts`); `users.me` returns `{ email, isAdmin }`.
      An admin must also be in `ALLOWED_EMAILS`.
    - Shell routes: `/keys`, `/connect`, `/apps` (empty pages); sign-in is shown when signed out.
-2. AI keys page (port karya's encryption and providers) + gateway; move karya onto it.
+2. ✔ AI keys page (port karya's encryption and providers) + gateway; move karya onto it.
+   Done 2026-10-25 locally (not deployed yet). Notes:
+   - Providers and the `fast` / `smart` models live in `backend/convex/lib/providers.ts`
+     (Anthropic `claude-haiku-5-5` / `claude-sonnet-5-5`, OpenAI `gpt-5-mini` / `gpt-5`, Gemini
+     `gemini-3.1-flash-lite` / `gemini-3-flash-preview`, Groq `openai/gpt-oss-20b` / `-120b`).
+     OpenAI's ids are untested: no OpenAI key was available locally.
+   - Both adapters use `fetch`, no SDKs (`lib/gateway.ts`). Anthropic: native Messages API,
+     `anthropic-version: 2026-10-21` (so `temperature` is dropped), `json` via structured outputs.
+     OpenAI-compatible: `json` via `json_schema`, except Groq and Custom, which get `json_object`
+     plus the schema in the system prompt (karya's proven Groq path).
+   - A Custom key also stores the **model** to use (one model for both aliases); its id is
+     `custom:<slug of name>`, so several Custom providers can coexist.
+   - The `aiKeys` rows are the try order's source; `aiPrefs` holds the order (first = preferred).
+     The page orders keys with up/down arrows rather than separate preferred/fallback fields.
+   - Errors: also `unauthorized` (bad app secret, 401) and `bad_request` (400). `no_key` (403) covers
+     no kunji account, no key saved, or the requested provider not saved. All saved keys are
+     tried in order; the first failure's code is returned with every message joined. A busy
+     (5xx / timeout) `fast` model is retried once on `smart`, since Gemini Flash-Lite often 503s.
+   - Rate limit: 20 calls a minute per person per app. `aiCalls` rows are kept for Usage
+     (UTC days, last 30), with `error` set on failed calls.
+   - App registry: `apps` table and an admin-only form on **Apps**; the secret (`kjs_…`) is shown
+     once, stored as SHA-256 hash (lookup) + ciphertext (for step 3). No rotate/disable UI yet.
+   - Not yet: the per-user "allows this app" check (needs `userApps`, steps 3–4), streaming.
+   - karya: `lib/kunji.ts` client (`KUNJI_URL`, `KUNJI_SECRET`), AI keys gone from Settings and
+     schema use, `migrations:clearAiKeys` removes old keys and `aiCalls` rows. Its schema still
+     declares the old fields until that has run on prod; drop them in a follow-up.
+   - Prod order: deploy kunji (set `ENCRYPTION_KEY`), register karya on kunji's Apps page, set
+     `KUNJI_URL` / `KUNJI_SECRET` on karya's prod, deploy karya, run `clearAiKeys --prod`.
 3. App registry + app contract + `convex/lib/kunji.ts`; picki as the first app.
 4. Browse page, tokens, `/mcp`, Connect page; test with Claude Code.
 5. yaad-dila and note-shote tools.
