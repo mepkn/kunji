@@ -245,7 +245,8 @@ something worth asking for.
      (2026-10-25); the fields, the table and the migration were then removed from karya.
 3. ✔ App registry + app contract + `convex/lib/kunji.ts`; **karya** as the first app (already
    registered, reuses its `KUNJI_SECRET`; add email verification to karya first if missing).
-   No other app in this step. Done locally 2026-10-26 (not yet deployed). Notes:
+   No other app in this step. Done 2026-10-26, live: kunji prod lists karya's 4 tools and Try a tool
+   returns real data. Notes:
    - Registry: each app has an admin page `/apps/:slug` (edit, Disable, Rotate secret, Refresh,
      cached tools, **Try a tool**). Disabling refuses the app's secret at the gateway and stops
      kunji calling it. Renaming the slug renames the tool prefix.
@@ -259,7 +260,7 @@ something worth asking for.
    - karya tools (read-only): `list_tickets`, `get_ticket`, `current_focus`, `calibration_summary`,
      built on the helpers the app's own queries use.
    - karya got email verification (`otp.ts`, from `Karya <noreply@send.pknspace.com>`) and a one-off
-     `migrations:markUsersVerified` (run locally; to run on prod at deploy, then remove).
+     `migrations:markUsersVerified` (ran on prod 2026-10-26, 1 user; then removed from the repo).
 4. Browse page, tokens, `/mcp`, Connect page; test with Claude Code.
 5. Other apps, later and one at a time (picki, yaad-dila, note-shote, ...), each copying
    karya's `lib/kunji.ts` and getting email verification first.
