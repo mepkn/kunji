@@ -119,7 +119,7 @@ endpoint, later; Google Assistant has no open third-party path today.
 Every registered app with the person's status, from each app's `/tools/access`:
 
 ```
-✔ Picki      connected      5 tools   [on]
+✔ Karya      connected      4 tools   [on]
 ✖ Note-shote no account     Sign up at note-shote.pknspace.com →
 ✖ Alp        not allowed
 ```
@@ -148,7 +148,8 @@ server. All three require `Authorization: Bearer <KUNJI_SECRET>` (constant-time 
   through internal queries/mutations it already has. Its `ALLOWED_EMAILS` check still applies.
 - Results are small JSON; kunji turns them into MCP content.
 - A shared helper (`convex/lib/kunji.ts`: auth check, route wiring, tool registry) is copied
-  between apps, like the shadcn setup. The first app (picki) is its reference.
+  between apps, like the shadcn setup. The first app (karya) is its reference; karya's
+  `lib/kunji.ts` already holds the gateway client, so the tool helpers join it there.
 - Apps that use AI call the kunji gateway with the same secret instead of holding keys.
 
 ## Which apps get tools
@@ -158,16 +159,16 @@ something worth asking for.
 
 | App | Tools | First tools |
 |---|---|---|
-| yaad-dila | ✔ first | `add_reminder`, `list_upcoming`, `snooze_reminder` |
-| note-shote | ✔ first | `create_note`, `search_notes`, `append_to_note` |
-| picki | ✔ first (reference) | `list_lists`, `pick_random`, `add_item` |
+| yaad-dila | ✔ later | `add_reminder`, `list_upcoming`, `snooze_reminder` |
+| note-shote | ✔ later | `create_note`, `search_notes`, `append_to_note` |
+| picki | ✔ later | `list_lists`, `pick_random`, `add_item` |
 | suchi | ✔ | `list_lists`, `add_to_list`, `get_top` |
 | panna | ✔ | `read_pad`, `append_to_pad` |
 | alp | ✔ | `shorten_url`, `list_links` |
 | learn | ✔ | `search_notes`, `add_note` |
 | drop | ✔ | `send_text` (to my devices) |
 | setu | ✔ | its existing MCP tools moved behind the contract |
-| karya | ✔ + first gateway user | `estimate_ticket`, `today_plan`; its AI keys move to kunji |
+| karya | ✔ **first app (reference)**, first gateway user | proposed from its code at step 3; read-only first, writes / Jira / AI need my OK |
 | niji, pralekh | ✖ | end-to-end encrypted: the server cannot read the data, by design |
 | dash, class, syntax-party | ✖ | showcase / live classroom / reference content |
 | Desktop apps, static apps | ✖ | no cloud backend |
@@ -236,11 +237,14 @@ something worth asking for.
    - karya: `lib/kunji.ts` client (`KUNJI_URL`, `KUNJI_SECRET`), AI keys gone from Settings.
      A one-off `clearAiKeys` migration removed the old keys and `aiCalls` rows on prod
      (2026-10-25); the fields, the table and the migration were then removed from karya.
-3. App registry + app contract + `convex/lib/kunji.ts`; picki as the first app.
+3. App registry + app contract + `convex/lib/kunji.ts`; **karya** as the first app (already
+   registered, reuses its `KUNJI_SECRET`; add email verification to karya first if missing).
+   No other app in this step.
 4. Browse page, tokens, `/mcp`, Connect page; test with Claude Code.
-5. yaad-dila and note-shote tools.
+5. Other apps, later and one at a time (picki, yaad-dila, note-shote, ...), each copying
+   karya's `lib/kunji.ts` and getting email verification first.
 6. `/ask` + Siri Shortcut.
-7. Remaining apps; Android voice app later.
+7. Android voice app later.
 
 ## Decided
 
