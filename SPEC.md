@@ -199,7 +199,7 @@ something worth asking for.
 ## Build order
 
 1. ✔ Scaffold (picki layout), auth with email verification, `ALLOWED_EMAILS`, deploy.
-   Done locally 2026-10-25 (prod deploy still to do). Notes:
+   Done 2026-10-25, live at https://kunji.pknspace.com (prod Convex `exciting-echidna-830`). Notes:
    - picki has no email verification, so `backend/convex/otp.ts` (`ResendOTP`, `ResendOTPReset`)
      is new here and calls Resend's API with `fetch` (no `resend` package). Without
      `RESEND_API_KEY` the code is logged instead, so local dev needs no Resend key.
