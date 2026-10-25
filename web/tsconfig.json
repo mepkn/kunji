@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "compilerOptions": {
+    "paths": { "@/*": ["./src/*"], "@convex/*": ["../backend/convex/*"] }
+  },
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
