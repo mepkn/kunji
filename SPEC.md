@@ -207,7 +207,8 @@ something worth asking for.
      An admin must also be in `ALLOWED_EMAILS`.
    - Shell routes: `/keys`, `/connect`, `/apps` (empty pages); sign-in is shown when signed out.
 2. ✔ AI keys page (port karya's encryption and providers) + gateway; move karya onto it.
-   Done 2026-10-25 locally (not deployed yet). Notes:
+   Done 2026-10-25, live: the gateway is `https://exciting-echidna-830.convex.site/ai/v1/generate`
+   and karya (prod `avid-dove-133`) runs on it. Notes:
    - Providers and the `fast` / `smart` models live in `backend/convex/lib/providers.ts`
      (Anthropic `claude-haiku-5-5` / `claude-sonnet-5-5`, OpenAI `gpt-5-mini` / `gpt-5`, Gemini
      `gemini-3.1-flash-lite` / `gemini-3-flash-preview`, Groq `openai/gpt-oss-20b` / `-120b`).
@@ -229,11 +230,12 @@ something worth asking for.
    - App registry: `apps` table and an admin-only form on **Apps**; the secret (`kjs_…`) is shown
      once, stored as SHA-256 hash (lookup) + ciphertext (for step 3). No rotate/disable UI yet.
    - Not yet: the per-user "allows this app" check (needs `userApps`, steps 3–4), streaming.
-   - karya: `lib/kunji.ts` client (`KUNJI_URL`, `KUNJI_SECRET`), AI keys gone from Settings and
-     schema use, `migrations:clearAiKeys` removes old keys and `aiCalls` rows. Its schema still
-     declares the old fields until that has run on prod; drop them in a follow-up.
-   - Prod order: deploy kunji (set `ENCRYPTION_KEY`), register karya on kunji's Apps page, set
-     `KUNJI_URL` / `KUNJI_SECRET` on karya's prod, deploy karya, run `clearAiKeys --prod`.
+   - The gateway accepts only a user whose email is verified, and only if exactly one such row
+     exists (Convex Auth's own linking rule): an unverified sign-up leaves a second `users` row
+     with the same email.
+   - karya: `lib/kunji.ts` client (`KUNJI_URL`, `KUNJI_SECRET`), AI keys gone from Settings.
+     A one-off `clearAiKeys` migration removed the old keys and `aiCalls` rows on prod
+     (2026-10-25); the fields, the table and the migration were then removed from karya.
 3. App registry + app contract + `convex/lib/kunji.ts`; picki as the first app.
 4. Browse page, tokens, `/mcp`, Connect page; test with Claude Code.
 5. yaad-dila and note-shote tools.
