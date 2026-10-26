@@ -17,7 +17,11 @@ See [SPEC.md](SPEC.md) for the full design and build order.
 - **Usage**: calls and tokens per app per day.
 - **Apps**: admins (`ADMIN_EMAILS`) register an app and get its secret, shown once; each app's
   page edits it, disables it, rotates its secret, refreshes its cached tools and has a **Try a
-  tool** box that runs a tool as you. **Connect** is still empty.
+  tool** box that runs a tool as you. Everyone sees every enabled app with their status
+  (connected / no account with a sign-up link / not allowed), its tool count and an on/off switch.
+- **MCP**: one server at `/mcp` with every connected, switched-on app's tools (`karya__list_tickets`).
+  **Connect** creates tokens (`kj_…`, shown once, never expire, revocable) and has snippets for
+  Claude Code, Cursor and Claude Desktop. **Activity** lists your recent tool calls.
 
 ## Stack
 
@@ -103,7 +107,7 @@ try_files {path} /index.html
               tools?, json?: <JSON Schema>, maxTokens?, temperature? }
   response: { text, json?, toolCalls?, provider, model, usage: { inputTokens, outputTokens } }
   error:    { error: { code, message } }   code: unauthorized | bad_request | no_key |
-                                           key_refused | rate_limited | provider_error
+                                           app_off | key_refused | rate_limited | provider_error
   ```
 
   The secret is looked up by its SHA-256 hash, the person by email (and `ALLOWED_EMAILS`). Their
@@ -115,6 +119,7 @@ try_files {path} /index.html
   `lib/gateway.ts` has the two adapters: OpenAI-compatible Chat Completions (OpenAI, Groq,
   Gemini's OpenAI endpoint, Custom) and Anthropic's native Messages API (structured outputs for
   `json`, `anthropic-version: 2026-10-21`, so `temperature` is not sent).
+- `app_off`: the person switched the app off on **Apps**.
 - An app's secret (`kjs_…`) comes from the admin form on **Apps**; set it on the app's Convex
   deployment as `KUNJI_SECRET`, with `KUNJI_URL` = kunji's `.convex.site` URL.
 
@@ -138,3 +143,14 @@ try_files {path} /index.html
   `src/pages/SignInPage.tsx` runs the sign-in / sign-up / code / reset steps;
   `src/components/Shell.tsx` is the signed-in layout with `/keys` (`KeysPage`), `/usage`,
   `/connect`, `/apps` (`AppsPage`, with the admin registry) and `/apps/:slug` (`AppPage`, admin).
+
+### MCP
+
+- `POST https://<deployment>.convex.site/mcp`, `Authorization: Bearer kj_…`: stateless JSON-RPC
+  (`initialize`, `ping`, `tools/list`, `tools/call`), like setu's server (`backend/convex/mcp.ts`).
+- Tokens are stored as SHA-256 + last 4 (`tokens.ts`). `tools/list` shows each enabled app the
+  person has switched on (`userApps`, `myApps.ts`) and has an account in, from the cached
+  `/kunji/access` status (rechecked when older than an hour), prefixed `<slug>__`.
+- `tools/call` sends `/kunji/call` with the person's email; app errors become MCP tool errors
+  (`isError`). Every call is logged in `toolCalls`.
+- claude.ai and Claude Desktop custom connectors need OAuth, which is not built yet (SPEC.md 4b).

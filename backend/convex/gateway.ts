@@ -73,6 +73,9 @@ export const generate = httpAction(async (ctx, req) => {
     const noKey = new GatewayError("no_key", "Add your AI key at kunji.pknspace.com");
     const userId = await ctx.runQuery(internal.gateway.userByEmail, { email: body.userEmail });
     if (userId === null) throw noKey;
+    if (await ctx.runQuery(internal.myApps.isOff, { userId, appId: app._id })) {
+      throw new GatewayError("app_off", "You switched this app off in kunji. Turn it on at kunji.pknspace.com/apps.");
+    }
 
     const keys = await ctx.runQuery(internal.aiKeys.encryptedInOrder, { userId });
     const order = tryOrder(

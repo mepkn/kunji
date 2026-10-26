@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as activity from "../activity.js";
 import type * as aiKeys from "../aiKeys.js";
 import type * as apps from "../apps.js";
 import type * as auth from "../auth.js";
@@ -19,9 +20,13 @@ import type * as lib_allowlist from "../lib/allowlist.js";
 import type * as lib_appClient from "../lib/appClient.js";
 import type * as lib_crypto from "../lib/crypto.js";
 import type * as lib_gateway from "../lib/gateway.js";
+import type * as lib_mcp from "../lib/mcp.js";
 import type * as lib_providers from "../lib/providers.js";
 import type * as lib_secrets from "../lib/secrets.js";
+import type * as mcp from "../mcp.js";
+import type * as myApps from "../myApps.js";
 import type * as otp from "../otp.js";
+import type * as tokens from "../tokens.js";
 import type * as usage from "../usage.js";
 import type * as users from "../users.js";
 
@@ -32,6 +37,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  activity: typeof activity;
   aiKeys: typeof aiKeys;
   apps: typeof apps;
   auth: typeof auth;
@@ -43,9 +49,13 @@ declare const fullApi: ApiFromModules<{
   "lib/appClient": typeof lib_appClient;
   "lib/crypto": typeof lib_crypto;
   "lib/gateway": typeof lib_gateway;
+  "lib/mcp": typeof lib_mcp;
   "lib/providers": typeof lib_providers;
   "lib/secrets": typeof lib_secrets;
+  mcp: typeof mcp;
+  myApps: typeof myApps;
   otp: typeof otp;
+  tokens: typeof tokens;
   usage: typeof usage;
   users: typeof users;
 }>;

@@ -63,6 +63,27 @@ export default defineSchema({
     error: v.optional(v.string()),
   }).index("by_app", ["appId"]),
 
+  // MCP tokens (kj_…): shown once, stored as SHA-256. Never expire; revoking deletes the row.
+  mcpTokens: defineTable({
+    userId: v.id("users"),
+    name: v.string(),
+    tokenHash: v.string(),
+    last4: v.string(),
+    createdAt: v.number(),
+    lastUsedAt: v.optional(v.number()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_tokenHash", ["tokenHash"]),
+
+  // A person's switch and cached /kunji/access status per app. No row: on, not checked yet.
+  userApps: defineTable({
+    userId: v.id("users"),
+    appId: v.id("apps"),
+    enabled: v.boolean(),
+    status: v.optional(v.union(v.literal("ok"), v.literal("no_account"), v.literal("not_allowed"), v.literal("error"))),
+    checkedAt: v.optional(v.number()),
+  }).index("by_user_app", ["userId", "appId"]),
+
   // Every tool call kunji makes, for the Activity page.
   toolCalls: defineTable({
     userId: v.id("users"),

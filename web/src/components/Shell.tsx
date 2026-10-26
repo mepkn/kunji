@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from "react-router";
 import { useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { AppWindow, BarChart3, KeyRound, LogOut, Plug } from "lucide-react";
+import { Activity, AppWindow, BarChart3, KeyRound, LogOut, Plug } from "lucide-react";
 import { api } from "@convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ const sections = [
   { to: "/usage", label: "Usage", icon: BarChart3 },
   { to: "/connect", label: "Connect", icon: Plug },
   { to: "/apps", label: "Apps", icon: AppWindow },
+  { to: "/activity", label: "Activity", icon: Activity },
 ];
 
 /** The signed-in layout: top bar with the sections, page below. */

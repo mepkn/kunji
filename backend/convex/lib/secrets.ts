@@ -15,10 +15,20 @@ export async function sha256Hex(text: string): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-/** A new app secret: "kjs_" + 32 random bytes, base64url. */
-export function newAppSecret(): string {
+/** 32 random bytes, base64url. Call from actions only: mutations' randomness is seeded. */
+function randomToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
   let s = "";
   for (const b of bytes) s += String.fromCharCode(b);
-  return `kjs_${btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")}`;
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/** A new app secret: "kjs_" + 32 random bytes. */
+export function newAppSecret(): string {
+  return `kjs_${randomToken()}`;
+}
+
+/** A new MCP token: "kj_" + 32 random bytes. */
+export function newMcpToken(): string {
+  return `kj_${randomToken()}`;
 }

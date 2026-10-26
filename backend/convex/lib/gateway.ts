@@ -31,12 +31,13 @@ export type GenerateResponse = {
   usage: { inputTokens: number; outputTokens: number };
 };
 
-export type ErrorCode = "unauthorized" | "bad_request" | "no_key" | "key_refused" | "rate_limited" | "provider_error";
+export type ErrorCode = "unauthorized" | "bad_request" | "no_key" | "app_off" | "key_refused" | "rate_limited" | "provider_error";
 
 const STATUS: Record<ErrorCode, number> = {
   unauthorized: 401,
   bad_request: 400,
   no_key: 403,
+  app_off: 403,
   key_refused: 403,
   rate_limited: 429,
   provider_error: 502,

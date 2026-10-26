@@ -86,17 +86,20 @@ Authorization: Bearer <app secret>
   hand. The token list shows "last used" so unused ones are easy to spot.
 - **Connect page** with tabs and copyable snippets:
   - Claude Code: `claude mcp add --transport http kunji https://<kunji>/mcp --header "Authorization: Bearer kj_…"`
-  - Claude Desktop / claude.ai: connector URL + token
-  - Cursor / other: JSON config
+  - Claude Desktop: `claude_desktop_config.json` with `mcp-remote` passing the Bearer header
+  - Cursor / other: JSON config (`url` + `headers`)
+  - claude.ai and Claude Desktop **custom connectors**: need OAuth (or no auth); there is no
+    field for a Bearer header. Later step (below).
   - Siri: a downloadable Shortcut (dictate → `POST /ask` → speak reply)
 - Per-app switch: which apps' tools the person's AI clients can see.
 
 ### `/mcp`
 
 - kunji is the only real MCP server (streamable HTTP). It lists tools from the person's enabled
-  apps that have a ✔ account, prefixed by app: `picki.pick_random`, `yaad-dila.add_reminder`.
-- A tool call goes to that app's `/tools/call` with the person's email (below).
-- The tool list per app is cached (refreshed on admin **Refresh** and every few hours).
+  apps that have a ✔ account, prefixed by app: `picki__pick_random`, `yaad-dila__add_reminder` (MCP allows dots, but
+  Claude's API only `[a-zA-Z0-9_-]`; slugs have no `_`, so the first `__` splits).
+- A tool call goes to that app's `/kunji/call` with the person's email (App contract).
+- The tool list per app is cached (refreshed on admin **Refresh**; a periodic refresh is still to do).
 
 ### `/ask` (voice and anything that can send one request)
 
@@ -116,7 +119,7 @@ endpoint, later; Google Assistant has no open third-party path today.
 
 ### Browse (everyone)
 
-Every registered app with the person's status, from each app's `/tools/access`:
+Every enabled app with the person's status, from each app's `/kunji/access`:
 
 ```
 ✔ Karya      connected      4 tools   [on]
@@ -261,7 +264,31 @@ something worth asking for.
      built on the helpers the app's own queries use.
    - karya got email verification (`otp.ts`, from `Karya <noreply@send.pknspace.com>`) and a one-off
      `migrations:markUsersVerified` (ran on prod 2026-10-26, 1 user; then removed from the repo).
-4. Browse page, tokens, `/mcp`, Connect page; test with Claude Code.
+4. ✔ Browse page, tokens, `/mcp`, Connect page; test with Claude Code.
+   Done locally 2026-10-26 (real Claude Code listed karya's tools and called `current_focus` and
+   `list_tickets`); prod deploy pending. Notes:
+   - `/mcp` (`backend/convex/mcp.ts`) follows setu's server: stateless JSON-RPC over POST,
+     `initialize`, `ping`, `tools/list`, `tools/call`, batches, notifications → 202, CORS, 401 with
+     `WWW-Authenticate: Bearer`. Pure routing/filtering is in `lib/mcp.ts`.
+   - Tool names are `<slug>__<tool>`, descriptions prefixed `<App name>: `.
+   - Tokens (`tokens.ts`): `kj_` + 32 random bytes, SHA-256 hash + last 4 stored; revoking deletes
+     the row; `lastUsedAt` set on every request. A token stops working if its owner leaves
+     `ALLOWED_EMAILS`.
+   - `userApps` (`myApps.ts`): no row means on and unchecked. Statuses are `ok`, `no_account`,
+     `not_allowed` or `error` (app unreachable). Rechecked when Apps opens, on Refresh, and by
+     `tools/list` when older than an hour. A `/kunji/call` answering `no_account` / `not_allowed`
+     updates the cache.
+   - Switched off: hidden from `tools/list`; `tools/call` returns a tool error saying so; the gateway
+     answers `app_off` (403).
+   - Every `tools/call` that names a known app is logged in `toolCalls` (refused ones as `refused`);
+     **Activity** shows the last 100.
+   - Connect page derives the MCP URL from `VITE_CONVEX_URL` (`.convex.cloud` → `.convex.site`,
+     locally port + 1).
+   - Backend tests now use convex-test (`backend/vitest.config.mts`, `edge-runtime`), `tests/mcp.test.ts`.
+4b. OAuth for `/mcp` (later), so claude.ai and Claude Desktop custom connectors work: they
+   support only OAuth (Dynamic Client Registration or Client ID Metadata Documents) or no auth.
+   kunji would serve the protected-resource / authorization-server metadata and a consent page
+   that issues a token per client.
 5. Other apps, later and one at a time (picki, yaad-dila, note-shote, ...), each copying
    karya's `lib/kunji.ts` and getting email verification first.
 6. `/ask` + Siri Shortcut.

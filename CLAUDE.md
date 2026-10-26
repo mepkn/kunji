@@ -52,4 +52,10 @@ Local and prod registrations are separate rows with separate secrets.
   `KUNJI_SECRET` is updated.
 - Anthropic requests use `anthropic-version: 2026-10-21`, which drops `temperature`.
 - OpenAI's `fast`/`smart` model ids are untested (no key locally).
-- `toolCalls` rows exist but have no page yet (Activity, step 4).
+- MCP tool names are `<slug>__<tool>`, not `slug.tool`: Claude's API refuses dots in tool names.
+- To test `/mcp` with Claude Code locally without the UI: `npx convex run tokens:insert` with a
+  token's SHA-256 (tokens:create needs a signed-in user), then
+  `claude mcp add --transport http kunji-local http://127.0.0.1:3211/mcp --header "Authorization: Bearer kj_…"`
+  and `claude -p "…" --allowedTools "mcp__kunji-local__*"`.
+- Backend tests: convex-test with `fetch` stubbed as the app (`tests/mcp.test.ts`); set
+  `ENCRYPTION_KEY` and `ALLOWED_EMAILS` with `vi.stubEnv`.

@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from "react";
-import { useAction, useQuery } from "convex/react";
+import { useEffect, useState, type FormEvent } from "react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { Link } from "react-router";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, RefreshCw } from "lucide-react";
 import { api } from "@convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import { errorMessage } from "@/lib/errors";
 import { SecretOnce } from "@/pages/AppPage";
 
@@ -93,6 +94,79 @@ function Registry() {
   );
 }
 
+/** Every enabled app with my status (rechecked on open and Refresh) and my on/off switch. */
+function Browse() {
+  const apps = useQuery(api.myApps.browse);
+  const check = useAction(api.myApps.check);
+  const setOn = useMutation(api.myApps.setOn);
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function recheck() {
+    setChecking(true);
+    setError(null);
+    try {
+      await check({});
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setChecking(false);
+    }
+  }
+  // Recheck quietly on open; the cached statuses show meanwhile.
+  useEffect(() => {
+    check({}).catch(() => undefined);
+  }, [check]);
+
+  if (apps === undefined) return <Spinner />;
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <p className="text-sm text-muted-foreground">Switch an app off to hide its tools from your AI clients.</p>
+        <Button variant="outline" size="sm" className="ml-auto" disabled={checking} onClick={() => void recheck()}>
+          {checking ? <Spinner /> : <RefreshCw />} Refresh
+        </Button>
+      </div>
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      {apps.length === 0 ? (
+        <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">No apps yet.</div>
+      ) : (
+        <ul className="divide-y rounded-lg border">
+          {apps.map((a) => (
+            <li key={a.appId} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-sm">
+              <a href={a.siteUrl} target="_blank" rel="noreferrer" className="font-medium hover:underline">
+                {a.name}
+              </a>
+              {a.status === "ok" ? (
+                <>
+                  <Badge variant="secondary">Connected</Badge>
+                  <span className="text-muted-foreground">
+                    {a.toolCount} tool{a.toolCount === 1 ? "" : "s"}
+                  </span>
+                </>
+              ) : a.status === "no_account" ? (
+                <>
+                  <Badge variant="outline">No account</Badge>
+                  <a href={a.siteUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    Sign up at {new URL(a.siteUrl).host} →
+                  </a>
+                </>
+              ) : a.status === "not_allowed" ? (
+                <Badge variant="outline">Not allowed</Badge>
+              ) : a.status === "error" ? (
+                <Badge variant="destructive">Unreachable</Badge>
+              ) : (
+                <span className="text-muted-foreground">Checking…</span>
+              )}
+              <Switch className="ml-auto" aria-label={`${a.name} on`} checked={a.on} onCheckedChange={(on) => void setOn({ appId: a.appId, on })} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export function AppsPage() {
   const me = useQuery(api.users.me);
   return (
@@ -101,7 +175,7 @@ export function AppsPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Apps</h1>
         <p className="text-muted-foreground">The apps whose tools your AI clients can use.</p>
       </div>
-      <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">Nothing here yet.</div>
+      <Browse />
       {me?.isAdmin && <Registry />}
     </div>
   );
