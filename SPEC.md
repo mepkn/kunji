@@ -397,6 +397,18 @@ something worth asking for.
      *linked*; converted to `anonymous-drop` first (it was empty). Backend tests already used vitest; convex-test was
      added. Screenshot frame was again ×1.097 locally and 1:1 on prod. Prod `SITE_URL` was already
      `https://drop.pknspace.com`.
+   - setu ✔ (2026-10-31, the last app in the order): verification + reset by code (web sign-in page in setu's
+     own look); its own MCP tools moved behind the contract with the same names and results: `list_projects`,
+     `list_folders`, `search_endpoints`, `get_endpoint`, `list_changes`, all read-only (queries moved from `mcp.ts`
+     into `lib/tools.ts`). A call runs as the verified user's `members` rows, with their role per project; only
+     owners may pass `include_hidden`. **setu's own `/mcp` was removed**, with personal `setu_pat_…` tokens (the
+     `/account` page and `tokens` table) and guest `setu_guest_…` MCP keys (`guests.mcpTokenHash`); guests keep
+     their docs link but get no AI access, since kunji needs a verified account. Prod rows cleared first by a
+     one-off migration (2 tokens, 4 guest keys), then the table and field dropped. Registered locally
+     (`http://127.0.0.1:3213`) and on prod (`https://dependable-dachshund-59.convex.site`); real Claude Code ran all
+     five tools locally, all five via Try a tool on prod. Notes: setu's local backend was still *linked*;
+     converted to `anonymous-setu` (data kept). Screenshot frame ×1.057 locally this time, 1:1 on prod. Prod
+     `SITE_URL` was already `https://setu.pknspace.com`.
    - Not yet: tools in the gateway's `tools` field are passed to the model, but kunji doesn't
      run them; `/ask` (step 6) is the first place kunji runs tools for a model.
 
