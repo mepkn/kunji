@@ -337,6 +337,18 @@ something worth asking for.
      Prod `SITE_URL` was `noteshote://` and became `noteshote://auth` (same as yaad-dila). The app has
      `@types/node` but the mobile typecheck has none, so `lib/env.ts` came along too. Only the app-contract
      half of `lib/kunji.ts` was copied (no gateway client: note-shote has no AI).
+   - suchi ✔ (2026-10-31): verification + reset by code (web sign-in page); tools `list_lists`,
+     `get_top` (read-only; a list is named by name, ignoring case, or id; follows the list's mode:
+     rank, tier then unplaced, or newest first; `include_done`) and `add_to_list` (shares `insertItem`
+     with `items.create`: bottom of the ranking / unplaced pile, duplicate titles refused; nothing
+     deletes, reorders or edits). Registered locally (`http://127.0.0.1:3217`) and on prod
+     (`https://sensible-mosquito-333.convex.site`); real Claude Code ran all three tools locally and the read-only ones on prod.
+     Notes: `lib/kunji.ts` and `otp.ts` read `process.env` directly (the web typecheck has Node
+     types), so no `lib/env.ts`. Local site ports move with whichever backends are running: suchi
+     took 3217, which note-shote's local registration also points at. A `!` command with a `re_...`
+     placeholder set note-shote's prod `RESEND_API_KEY` to junk (reset emails failed): give the user
+     a script that reads the key from the clipboard, refuses non-`re_` values and never echoes it, and
+     check every app's key by length/prefix only.
    - Not yet: tools in the gateway's `tools` field are passed to the model, but kunji doesn't
      run them; `/ask` (step 6) is the first place kunji runs tools for a model.
 
