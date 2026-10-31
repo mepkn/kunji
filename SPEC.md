@@ -170,7 +170,7 @@ something worth asking for.
 |---|---|---|
 | yaad-dila | ✔ later | `add_reminder`, `list_upcoming`, `snooze_reminder` |
 | note-shote | ✔ later | `create_note`, `search_notes`, `append_to_note` |
-| picki | ✔ later | `list_lists`, `pick_random`, `add_item` |
+| picki | ✔ | `list_lists`, `get_list`, `pick_random`, `add_item` |
 | suchi | ✔ | `list_lists`, `add_to_list`, `get_top` |
 | panna | ✔ | `read_pad`, `append_to_pad` |
 | alp | ✔ | `shorten_url`, `list_links` |
@@ -298,6 +298,14 @@ something worth asking for.
    need my OK), register in kunji locally and on prod, test with Claude Code.
    Order: picki, yaad-dila, note-shote, suchi, panna, alp, learn, drop, setu (its own MCP
    tools move behind the contract; decide whether setu's own `/mcp` stays).
+   - picki ✔ (2026-10-31): verification + reset by code; tools `list_lists`, `get_list` (read-only),
+     `pick_random` (records the pick, shares `pickFrom` with the Pick button) and `add_item`; a list
+     is named by name or slug. Registered locally (`http://127.0.0.1:3215`) and on prod
+     (`https://quaint-magpie-360.convex.site`). Notes: the app had no backend tests, so `vitest`,
+     `convex-test` and `vitest.config.mts` came from karya; pick errors became `ConvexError`s so
+     both kunji and the web UI show their message. Don't read a deployment URL by grepping
+     `dist/` for `convex.cloud`: a library holds a `happy-otter-123` placeholder. Use the
+     `convex env set --prod` output (it names the deployment) instead.
    - Not yet: tools in the gateway's `tools` field are passed to the model, but kunji doesn't
      run them; `/ask` (step 6) is the first place kunji runs tools for a model.
 
