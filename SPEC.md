@@ -292,7 +292,7 @@ something worth asking for.
    support only OAuth (Dynamic Client Registration or Client ID Metadata Documents) or no auth.
    kunji would serve the protected-resource / authorization-server metadata and a consent page
    that issues a token per client.
-5. Other apps, one at a time, each in its own session: email verification + reset by code first
+5. ✔ Other apps, one at a time, each in its own session: email verification + reset by code first
    (`../CLAUDE.md` → Convex, rolled out to every app with accounts, tools or not), then copy
    karya's `lib/kunji.ts`, add the tools from "Which apps get tools" (read-only first; writes
    need my OK), register in kunji locally and on prod, test with Claude Code.
