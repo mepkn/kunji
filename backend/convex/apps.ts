@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import { action, internalMutation, internalQuery, mutation, query, type ActionCtx } from "./_generated/server";
+import { action, internalAction, internalMutation, internalQuery, mutation, query, type ActionCtx } from "./_generated/server";
 import { requireActionAdmin } from "./lib/actionAuth";
 import { requireAdmin } from "./lib/access";
 import { AppError, callTool, checkAccess, listTools, type AppTarget } from "./lib/appClient";
@@ -176,20 +176,39 @@ function appMessage(err: unknown): string {
 }
 
 /** Fetches GET /kunji/tools into appTools. A failure keeps the old list and records the error. */
+async function fetchTools(ctx: ActionCtx, appId: Id<"apps">): Promise<number> {
+  const app = await appTarget(ctx, appId);
+  try {
+    const tools = await listTools(app);
+    await ctx.runMutation(internal.apps.storeTools, { appId, tools });
+    return tools.length;
+  } catch (err) {
+    const message = appMessage(err);
+    await ctx.runMutation(internal.apps.storeTools, { appId, error: message });
+    throw new ConvexError(message);
+  }
+}
+
+/** Admin Refresh on an app's page. */
 export const refreshTools = action({
   args: { appId: v.id("apps") },
   handler: async (ctx, { appId }): Promise<{ count: number }> => {
     await requireActionAdmin(ctx);
-    const app = await appTarget(ctx, appId);
-    try {
-      const tools = await listTools(app);
-      await ctx.runMutation(internal.apps.storeTools, { appId, tools });
-      return { count: tools.length };
-    } catch (err) {
-      const message = appMessage(err);
-      await ctx.runMutation(internal.apps.storeTools, { appId, error: message });
-      throw new ConvexError(message);
-    }
+    return { count: await fetchTools(ctx, appId) };
+  },
+});
+
+export const enabledIds = internalQuery({
+  args: {},
+  handler: async (ctx) => (await ctx.db.query("apps").collect()).filter((a) => a.enabled).map((a) => a._id),
+});
+
+/** The cron: refreshes every enabled app's tools. One app failing doesn't stop the others. */
+export const refreshAllTools = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const ids = await ctx.runQuery(internal.apps.enabledIds, {});
+    await Promise.allSettled(ids.map((appId) => fetchTools(ctx, appId)));
   },
 });
 

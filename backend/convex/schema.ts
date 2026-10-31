@@ -55,7 +55,7 @@ export default defineSchema({
     .index("by_slug", ["slug"])
     .index("by_secretHash", ["secretHash"]),
 
-  // Each app's GET /kunji/tools, cached (admin Refresh now; every few hours from step 4).
+  // Each app's GET /kunji/tools, cached (admin Refresh, and the 6-hourly cron in crons.ts).
   appTools: defineTable({
     appId: v.id("apps"),
     tools: v.array(v.object({ name: v.string(), description: v.string(), inputSchema: v.any() })),

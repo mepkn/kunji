@@ -12,6 +12,7 @@ import type * as activity from "../activity.js";
 import type * as aiKeys from "../aiKeys.js";
 import type * as apps from "../apps.js";
 import type * as auth from "../auth.js";
+import type * as crons from "../crons.js";
 import type * as gateway from "../gateway.js";
 import type * as http from "../http.js";
 import type * as lib_access from "../lib/access.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   aiKeys: typeof aiKeys;
   apps: typeof apps;
   auth: typeof auth;
+  crons: typeof crons;
   gateway: typeof gateway;
   http: typeof http;
   "lib/access": typeof lib_access;

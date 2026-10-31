@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "kunji": {
+      "type": "http",
+      "url": "https://exciting-echidna-830.convex.site/mcp",
+      "headers": {
+        "Authorization": "Bearer kj_k6y5eNQc8butmDXiuQbkSkyvS7NaN9nZ7ZLR3dWeAWE"
+      }
+    }
+  }
+}

@@ -99,7 +99,7 @@ Authorization: Bearer <app secret>
   apps that have a ✔ account, prefixed by app: `picki__pick_random`, `yaad-dila__add_reminder` (MCP allows dots, but
   Claude's API only `[a-zA-Z0-9_-]`; slugs have no `_`, so the first `__` splits).
 - A tool call goes to that app's `/kunji/call` with the person's email (App contract).
-- The tool list per app is cached (refreshed on admin **Refresh**; a periodic refresh is still to do).
+- The tool list per app is cached (refreshed on admin **Refresh** and every 6 hours by a cron, `backend/convex/crons.ts`).
 
 ### `/ask` (voice and anything that can send one request)
 
