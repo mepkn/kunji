@@ -174,7 +174,7 @@ something worth asking for.
 | suchi | ✔ | `list_lists`, `add_to_list`, `get_top` |
 | panna | ✔ | `read_pad`, `append_to_pad` |
 | alp | ✔ | `shorten_url`, `list_links` |
-| learn | ✔ | `search_notes`, `add_note` |
+| learn | ✔ | `search_notes`, `get_note`, `add_note`, `append_to_note` |
 | drop | ✔ | `send_text` (to my devices) |
 | setu | ✔ | its existing MCP tools moved behind the contract |
 | karya | ✔ **first app (reference)**, first gateway user | proposed from its code at step 3; read-only first, writes / Jira / AI need my OK |
@@ -370,6 +370,21 @@ something worth asking for.
      `find` in Chrome echoed the prod secret again: rotated at once and set from the clipboard after
      locating the copy button with `getBoundingClientRect` (JS-clicking it wouldn't reach the clipboard).
      Never use `find`/`read_page` on a page showing a secret. Prod `SITE_URL` was already `https://alp.pknspace.com`.
+   - learn ✔ (2026-10-31): verification + reset by code (web sign-in page, learn's own look with suchi's steps);
+     tools `search_notes`, `get_note` (read-only), `add_note` and `append_to_note`. The notes are one shared tree
+     (public reads), so the tools see every page; kunji still needs a verified, allowlisted user. Search uses two
+     new search indexes (page titles, then page text) and returns each page's path, a snippet and its link;
+     `get_note` cuts at 100,000 characters. `add_note` creates a page in an existing topic/section named by path
+     (`React / Hooks`, never creates sections); `append_to_note` adds after a blank line. Writes share
+     `insertNode` / `writePage` with `nodes.create` / `nodes.save`; nothing renames, moves or deletes, and an
+     append is lost if the page is open with unsaved edits (description says so). Registered locally
+     (`http://127.0.0.1:3213`) and on prod (`https://usable-orca-255.convex.site`); real Claude Code ran all four
+     tools locally, `search_notes` and `get_note` via Try a tool on prod. Notes: learn's local backend was still
+     *linked*; converted to `anonymous-learn` first. It had no backend tests: vitest, convex-test and
+     `test.helpers.ts` came from suchi. Claude in Chrome's screenshot frame isn't always CSS pixels (locally
+     ×1.097, so clicks at `getBoundingClientRect` coordinates missed the copy button): calibrate with a capture-phase
+     click listener that logs `clientX/Y`, and wrap `navigator.clipboard.writeText` to record only whether it was
+     called with a `kjs_` value, before reading the clipboard. Prod `SITE_URL` was already `https://learn.pknspace.com`.
    - Not yet: tools in the gateway's `tools` field are passed to the model, but kunji doesn't
      run them; `/ask` (step 6) is the first place kunji runs tools for a model.
 
