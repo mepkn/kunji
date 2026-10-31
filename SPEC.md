@@ -306,6 +306,21 @@ something worth asking for.
      both kunji and the web UI show their message. Don't read a deployment URL by grepping
      `dist/` for `convex.cloud`: a library holds a `happy-otter-123` placeholder. Use the
      `convex env set --prod` output (it names the deployment) instead.
+   - yaad-dila ✔ (2026-10-31): verification + reset by code (mobile sign-in screen, English and Hindi);
+     tools `list_upcoming`, `search_reminders` (read-only; the latter added so a model can find a
+     reminder's id), `add_reminder`, `snooze_reminder` and `set_reminder_active` (pause/resume, also
+     added). Writes share `insertReminder` / `setReminderActive` with the app's own mutations; the
+     app's i18n error codes are turned into sentences for the model. Snooze sets the next fire to
+     now + N minutes and the fire after it returns to the regular times; it is refused before the
+     first notification (a real Claude Code run showed it would pull a future start earlier).
+     Registered locally (`http://127.0.0.1:3211`) and on prod (`https://formal-setter-463.convex.site`).
+     Notes: the app has no Node types, so `lib/env.ts` reads `process.env` for `otp.ts` and
+     `lib/kunji.ts`. `SITE_URL=yaaddila://` broke code emails (Convex Auth strips the trailing `/`
+     and can't build the link): now `yaaddila://auth`. Its local backend is anonymous and the CLI
+     isn't linked to the project, so `--prod` silently targets local: use the deploy key from
+     `backend/.env.prod.local` with `CONVEX_DEPLOYMENT=` empty. `find` in Chrome echoes shown-once
+     secrets; copy them with the page's copy button and `pbpaste` instead (prod secret rotated once
+     for this). kunji's Rotate / Revoke use `window.confirm`, which freezes Claude in Chrome.
    - Not yet: tools in the gateway's `tools` field are passed to the model, but kunji doesn't
      run them; `/ask` (step 6) is the first place kunji runs tools for a model.
 
