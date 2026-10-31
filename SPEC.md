@@ -324,6 +324,19 @@ something worth asking for.
      Voice moved onto the gateway the same day: `voice.parse` (backend) replaces the on-device Gemini
      call and its key in Settings; kunji errors map to app messages (`noAiKey` → "add your key at
      kunji"). The second app on the gateway after karya.
+   - note-shote ✔ (2026-10-31): verification + reset by code (web sign-in page and mobile auth form);
+     tools `search_notes`, `get_note` (read-only; the latter added so a model can read a note it found),
+     `create_note` and `append_to_note`. Writes share `insertNote` / `appendToNote` with `notes.ts`; nothing
+     deletes, archives or rewrites text; append refuses trashed notes. `create_note` takes `tags` as a
+     comma-separated string of existing tag names (`checkInput` has no arrays) and refuses unknown ones with
+     the user's tag list. Registered locally (`http://127.0.0.1:3217`) and on prod
+     (`https://decisive-mockingbird-534.convex.site`); real Claude Code ran all four tools locally.
+     Notes: with `verify` on, Convex Auth passes the raw `params.email` to the verify provider, which
+     stored it untrimmed/uppercase on the user (an existing test caught it): `profile()` now writes the
+     normalised email back into `params`. Other apps whose clients don't lowercase should do the same.
+     Prod `SITE_URL` was `noteshote://` and became `noteshote://auth` (same as yaad-dila). The app has
+     `@types/node` but the mobile typecheck has none, so `lib/env.ts` came along too. Only the app-contract
+     half of `lib/kunji.ts` was copied (no gateway client: note-shote has no AI).
    - Not yet: tools in the gateway's `tools` field are passed to the model, but kunji doesn't
      run them; `/ask` (step 6) is the first place kunji runs tools for a model.
 
