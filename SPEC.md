@@ -175,7 +175,7 @@ something worth asking for.
 | panna | ✔ | `read_pad`, `append_to_pad` |
 | alp | ✔ | `shorten_url`, `list_links` |
 | learn | ✔ | `search_notes`, `get_note`, `add_note`, `append_to_note` |
-| drop | ✔ | `send_text` (to my devices) |
+| drop | ✔ | `send_text` (to my devices), `list_drops`, `get_drop`, `set_drop_pinned` |
 | setu | ✔ | its existing MCP tools moved behind the contract |
 | karya | ✔ **first app (reference)**, first gateway user | proposed from its code at step 3; read-only first, writes / Jira / AI need my OK |
 | niji, pralekh | ✖ | end-to-end encrypted: the server cannot read the data, by design |
@@ -385,6 +385,18 @@ something worth asking for.
      ×1.097, so clicks at `getBoundingClientRect` coordinates missed the copy button): calibrate with a capture-phase
      click listener that logs `clientX/Y`, and wrap `navigator.clipboard.writeText` to record only whether it was
      called with a `kjs_` value, before reading the clipboard. Prod `SITE_URL` was already `https://learn.pknspace.com`.
+   - drop ✔ (2026-10-31): verification + reset by code (web sign-in page, drop's own card with learn's steps);
+     tools `list_drops` (read-only: ready drops newest first, optional `kind`, `limit` 1–50; text preview or file
+     name/size/type), `get_drop` (read-only: a whole text, or a file's 24-hour download link signed with the existing
+     `lib/tickets.ts`; `blobstore/` untouched, the file itself is never returned), `send_text` (shares `insertText`
+     with `drops.addText`, device "AI (kunji)", same empty / 100,000-character limits) and `set_drop_pinned` (shares
+     `setDropPinned` with `drops.setPinned`, so unpinning restarts the 7-day clock; returns `changed`). Nothing
+     deletes drops or uploads files; other users' drops and unfinished uploads look like missing ids. Registered
+     locally (`http://127.0.0.1:3213`) and on prod (`https://wary-mule-895.convex.site`); real Claude Code ran all
+     four tools locally, `list_drops` and `get_drop` via Try a tool on prod. Notes: drop's local backend was still
+     *linked*; converted to `anonymous-drop` first (it was empty). Backend tests already used vitest; convex-test was
+     added. Screenshot frame was again ×1.097 locally and 1:1 on prod. Prod `SITE_URL` was already
+     `https://drop.pknspace.com`.
    - Not yet: tools in the gateway's `tools` field are passed to the model, but kunji doesn't
      run them; `/ask` (step 6) is the first place kunji runs tools for a model.
 
