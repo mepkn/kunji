@@ -289,8 +289,21 @@ something worth asking for.
    support only OAuth (Dynamic Client Registration or Client ID Metadata Documents) or no auth.
    kunji would serve the protected-resource / authorization-server metadata and a consent page
    that issues a token per client.
-5. Other apps, later and one at a time (picki, yaad-dila, note-shote, ...), each copying
-   karya's `lib/kunji.ts` and getting email verification first.
+5. Other apps, one at a time, each in its own session: email verification + reset by code first
+   (`../CLAUDE.md` → Convex, rolled out to every app with accounts, tools or not), then copy
+   karya's `lib/kunji.ts`, add the tools from "Which apps get tools" (read-only first; writes
+   need my OK), register in kunji locally and on prod, test with Claude Code.
+   Order: picki, yaad-dila, note-shote, suchi, panna, alp, learn, drop, setu (its own MCP
+   tools move behind the contract; decide whether setu's own `/mcp` stays).
+   - Not yet: tools in the gateway's `tools` field are passed to the model, but kunji doesn't
+     run them; `/ask` (step 6) is the first place kunji runs tools for a model.
+
+Also left (small, any time):
+- Activity: a Source column (MCP / Try a tool); no paging past the last 100.
+- Usage: no per-day view of tool calls (only AI calls).
+- Gateway streaming (Server-Sent Events).
+- Claude Desktop `mcp-remote` snippet is untested.
+- Per-person rate limit on `/mcp` tool calls (the gateway has one, `/mcp` has none).
 6. `/ask` + Siri Shortcut.
 7. Android voice app later.
 
