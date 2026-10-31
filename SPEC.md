@@ -349,6 +349,16 @@ something worth asking for.
      placeholder set note-shote's prod `RESEND_API_KEY` to junk (reset emails failed): give the user
      a script that reads the key from the clipboard, refuses non-`re_` values and never echoes it, and
      check every app's key by length/prefix only.
+   - panna ✔ (2026-10-31): verification + reset by code (web sign-in page and mobile auth form, both
+     copied from note-shote, whose screens had the same shape); tools `read_pad` (read-only: text, bytes,
+     limit, version, last saved) and `append_to_pad` (adds the text on a new line at the end, creating the
+     pad if needed; shares `writePad` with `pad.save`, so the version bump and 100 KB limit match the app;
+     refuses empty text and anything over the limit; never replaces or clears). Registered locally
+     (`http://127.0.0.1:3211`) and on prod (`https://insightful-chickadee-479.convex.site`); real Claude
+     Code ran both tools locally, `read_pad` via Try a tool on prod. Notes: the pad is last-write-wins, so an
+     append made while the user is typing (within the 500 ms before their save) can be overwritten; the
+     tool description says so. The mobile typecheck has no Node types: `lib/env.ts` came from note-shote and
+     `allowlist.ts` now uses it too. Prod `SITE_URL` was already `https://panna.pknspace.com`.
    - Not yet: tools in the gateway's `tools` field are passed to the model, but kunji doesn't
      run them; `/ask` (step 6) is the first place kunji runs tools for a model.
 
