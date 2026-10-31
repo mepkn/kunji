@@ -359,6 +359,17 @@ something worth asking for.
      append made while the user is typing (within the 500 ms before their save) can be overwritten; the
      tool description says so. The mobile typecheck has no Node types: `lib/env.ts` came from note-shote and
      `allowlist.ts` now uses it too. Prod `SITE_URL` was already `https://panna.pknspace.com`.
+   - alp ✔ (2026-10-31): verification + reset by code (web sign-in page and mobile auth form, copied from
+     panna: alp's screens matched panna's pre-change files exactly); tools `list_links` (read-only: optional
+     `query` on the search index, else newest first; `limit` 1–100, default 20; `more`), `shorten_url`
+     (shares `insertLink` with `links.create`: given slug or a random 6-character one; slug/URL error codes
+     become sentences) and `set_link_enabled` (by slug, case-sensitive, own links only; returns `changed`).
+     Nothing edits a target or deletes a link. Registered locally (`http://127.0.0.1:3213`) and on prod
+     (`https://honorable-sparrow-754.convex.site`); real Claude Code ran all three tools locally, `list_links`
+     via Try a tool on prod. Notes: Convex search ORs words, so a test expecting only exact matches failed.
+     `find` in Chrome echoed the prod secret again: rotated at once and set from the clipboard after
+     locating the copy button with `getBoundingClientRect` (JS-clicking it wouldn't reach the clipboard).
+     Never use `find`/`read_page` on a page showing a secret. Prod `SITE_URL` was already `https://alp.pknspace.com`.
    - Not yet: tools in the gateway's `tools` field are passed to the model, but kunji doesn't
      run them; `/ask` (step 6) is the first place kunji runs tools for a model.
 
