@@ -321,6 +321,9 @@ something worth asking for.
      `backend/.env.prod.local` with `CONVEX_DEPLOYMENT=` empty. `find` in Chrome echoes shown-once
      secrets; copy them with the page's copy button and `pbpaste` instead (prod secret rotated once
      for this). kunji's Rotate / Revoke use `window.confirm`, which freezes Claude in Chrome.
+     Voice moved onto the gateway the same day: `voice.parse` (backend) replaces the on-device Gemini
+     call and its key in Settings; kunji errors map to app messages (`noAiKey` → "add your key at
+     kunji"). The second app on the gateway after karya.
    - Not yet: tools in the gateway's `tools` field are passed to the model, but kunji doesn't
      run them; `/ask` (step 6) is the first place kunji runs tools for a model.
 
