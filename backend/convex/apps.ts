@@ -230,7 +230,14 @@ export const storeTools = internalMutation({
 });
 
 export const logCall = internalMutation({
-  args: { userId: v.id("users"), appId: v.id("apps"), tool: v.string(), ok: v.boolean(), error: v.optional(v.string()) },
+  args: {
+    userId: v.id("users"),
+    appId: v.id("apps"),
+    tool: v.string(),
+    ok: v.boolean(),
+    error: v.optional(v.string()),
+    source: v.union(v.literal("mcp"), v.literal("try")),
+  },
   handler: async (ctx, a) => {
     await ctx.db.insert("toolCalls", { ...a, at: Date.now() });
   },
@@ -255,11 +262,11 @@ export const tryTool = action({
     try {
       const access = await checkAccess(app, email);
       const reply = await callTool(app, email, tool, parsed);
-      await ctx.runMutation(internal.apps.logCall, { userId, appId, tool, ok: reply.ok, error: reply.ok ? undefined : reply.error.code });
+      await ctx.runMutation(internal.apps.logCall, { userId, appId, tool, ok: reply.ok, error: reply.ok ? undefined : reply.error.code, source: "try" });
       return { access, ...reply };
     } catch (err) {
       const message = appMessage(err);
-      await ctx.runMutation(internal.apps.logCall, { userId, appId, tool, ok: false, error: err instanceof AppError ? err.code : "error" });
+      await ctx.runMutation(internal.apps.logCall, { userId, appId, tool, ok: false, error: err instanceof AppError ? err.code : "error", source: "try" });
       throw new ConvexError(message);
     }
   },

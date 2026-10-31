@@ -13,6 +13,8 @@ import { decryptSecret, sha256Hex } from "./lib/secrets";
 const PROTOCOL_VERSION = "2025-06-18";
 /** Cached access statuses older than this are rechecked on tools/list. */
 const STATUS_TTL_MS = 60 * 60 * 1000;
+/** Tool calls a person may make a minute through /mcp, across all apps and tokens. */
+export const CALLS_PER_MINUTE = 30;
 const SITE_URL = () => process.env.SITE_URL ?? "https://kunji.pknspace.com";
 
 /** The token's owner, if the token exists and the owner may still use kunji. */
@@ -28,6 +30,18 @@ export const tokenUser = internalQuery({
     if (!user?.email || !isAllowedEmail(user.email)) return null;
     return { tokenId: token._id, userId: user._id, email: user.email };
   },
+});
+
+/** How many tool calls this person made in the last minute (every logged call counts). */
+export const recentCalls = internalQuery({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) =>
+    (
+      await ctx.db
+        .query("toolCalls")
+        .withIndex("by_user_at", (q) => q.eq("userId", userId).gt("at", Date.now() - 60_000))
+        .take(CALLS_PER_MINUTE)
+    ).length,
 });
 
 export const touch = internalMutation({
@@ -53,9 +67,12 @@ const toolError = (text: string): ToolReply => ({ content: [{ type: "text", text
 
 /** tools/call: routes "<slug>__<tool>" to that app's /kunji/call as the person, and logs it. */
 async function runTool(ctx: ActionCtx, user: User, name: string, input: unknown): Promise<ToolReply> {
+  if ((await ctx.runQuery(internal.mcp.recentCalls, { userId: user.userId })) >= CALLS_PER_MINUTE) {
+    return toolError(`kunji allows ${CALLS_PER_MINUTE} tool calls a minute. Wait a moment and try again.`);
+  }
   const route = routeCall(await ctx.runQuery(internal.myApps.reach, { userId: user.userId }), name, SITE_URL());
   const log = (ok: boolean, error?: string) =>
-    route.appId && route.tool ? ctx.runMutation(internal.apps.logCall, { userId: user.userId, appId: route.appId, tool: route.tool, ok, error }) : undefined;
+    route.appId && route.tool ? ctx.runMutation(internal.apps.logCall, { userId: user.userId, appId: route.appId, tool: route.tool, ok, error, source: "mcp" }) : undefined;
   if (!route.ok) {
     await log(false, "refused");
     return toolError(route.message);

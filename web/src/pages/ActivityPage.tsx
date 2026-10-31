@@ -3,6 +3,8 @@ import { api } from "@convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 
+const SOURCES = { mcp: "AI client", try: "Try a tool" } as const;
+
 /** My last 100 tool calls, from any AI client or Try a tool. */
 export function ActivityPage() {
   const calls = useQuery(api.activity.recent);
@@ -24,6 +26,7 @@ export function ActivityPage() {
                 <th className="px-3 py-2 font-medium">Time</th>
                 <th className="px-3 py-2 font-medium">App</th>
                 <th className="px-3 py-2 font-medium">Tool</th>
+                <th className="px-3 py-2 font-medium">Source</th>
                 <th className="px-3 py-2 font-medium">Result</th>
               </tr>
             </thead>
@@ -35,6 +38,7 @@ export function ActivityPage() {
                   <td className="px-3 py-2">
                     <code>{c.tool}</code>
                   </td>
+                  <td className="px-3 py-2 text-muted-foreground">{c.source === null ? "—" : SOURCES[c.source]}</td>
                   <td className="px-3 py-2">
                     {c.ok ? <Badge variant="secondary">ok</Badge> : <Badge variant="destructive">{c.error ?? "error"}</Badge>}
                   </td>

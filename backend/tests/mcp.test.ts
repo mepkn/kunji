@@ -2,6 +2,7 @@
 import { convexTest } from "convex-test";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { api } from "../convex/_generated/api";
+import { CALLS_PER_MINUTE } from "../convex/mcp";
 import schema from "../convex/schema";
 import { encryptSecret, sha256Hex } from "../convex/lib/secrets";
 
@@ -157,6 +158,7 @@ test("tools/call routes to the app as the person, maps errors and logs each call
   expect(off.content[0].text).toContain("switched Karya off");
 
   const activity = await me.query(api.activity.recent);
+  expect(activity.every((a) => a.source === "mcp")).toBe(true);
   expect(activity.map((a) => [a.app, a.tool, a.ok, a.error])).toEqual([
     ["Karya", "list_tickets", false, "refused"],
     ["Karya", "boom", false, "tool_error"],
@@ -175,4 +177,21 @@ test("the gateway refuses an app the person switched off", async () => {
   });
   expect(res.status).toBe(403);
   expect((await res.json()).error.code).toBe("app_off");
+});
+
+test("tools/call is limited per person per minute", async () => {
+  fakeApp(() => "ok");
+  const { t, names, call, userId, appId } = await setup();
+  await names();
+  await t.run(async (ctx) => {
+    for (let i = 0; i < CALLS_PER_MINUTE; i++) await ctx.db.insert("toolCalls", { userId, appId, tool: "list_tickets", ok: true, at: Date.now() });
+  });
+  const limited = await call("karya__list_tickets");
+  expect(limited.isError).toBe(true);
+  expect(limited.content[0].text).toContain(`${CALLS_PER_MINUTE} tool calls a minute`);
+  // Calls older than a minute no longer count.
+  await t.run(async (ctx) => {
+    for (const row of await ctx.db.query("toolCalls").collect()) await ctx.db.patch(row._id, { at: Date.now() - 61_000 });
+  });
+  expect((await call("karya__list_tickets")).isError).toBeUndefined();
 });

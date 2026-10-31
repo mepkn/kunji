@@ -281,7 +281,10 @@ something worth asking for.
    - Switched off: hidden from `tools/list`; `tools/call` returns a tool error saying so; the gateway
      answers `app_off` (403).
    - Every `tools/call` that names a known app is logged in `toolCalls` (refused ones as `refused`);
-     **Activity** shows the last 100.
+     **Activity** shows the last 100 with their source (`mcp` = AI client, `try` = Try a tool;
+     rows before 2026-10-31 have none).
+   - `/mcp` allows 30 tool calls a minute per person (all apps, all tokens; every logged call,
+     Try a tool included, counts); over it, a tool error.
    - Connect page derives the MCP URL from `VITE_CONVEX_URL` (`.convex.cloud` → `.convex.site`,
      locally port + 1).
    - Backend tests now use convex-test (`backend/vitest.config.mts`, `edge-runtime`), `tests/mcp.test.ts`.
@@ -299,11 +302,10 @@ something worth asking for.
      run them; `/ask` (step 6) is the first place kunji runs tools for a model.
 
 Also left (small, any time):
-- Activity: a Source column (MCP / Try a tool); no paging past the last 100.
+- Activity: no paging past the last 100.
 - Usage: no per-day view of tool calls (only AI calls).
 - Gateway streaming (Server-Sent Events).
 - Claude Desktop `mcp-remote` snippet is untested.
-- Per-person rate limit on `/mcp` tool calls (the gateway has one, `/mcp` has none).
 6. `/ask` + Siri Shortcut.
 7. Android voice app later.
 

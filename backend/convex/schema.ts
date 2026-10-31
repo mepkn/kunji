@@ -91,6 +91,8 @@ export default defineSchema({
     tool: v.string(),
     ok: v.boolean(),
     error: v.optional(v.string()),
+    // Where the call came from; rows from before 2026-10-31 have none.
+    source: v.optional(v.union(v.literal("mcp"), v.literal("try"))),
     at: v.number(),
   }).index("by_user_at", ["userId", "at"]),
 });

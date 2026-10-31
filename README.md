@@ -152,5 +152,6 @@ try_files {path} /index.html
   person has switched on (`userApps`, `myApps.ts`) and has an account in, from the cached
   `/kunji/access` status (rechecked when older than an hour), prefixed `<slug>__`.
 - `tools/call` sends `/kunji/call` with the person's email; app errors become MCP tool errors
-  (`isError`). Every call is logged in `toolCalls`.
+  (`isError`). Every call is logged in `toolCalls` with its source (AI client or Try a tool);
+  30 tool calls a minute per person.
 - claude.ai and Claude Desktop custom connectors need OAuth, which is not built yet (SPEC.md 4b).

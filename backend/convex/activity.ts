@@ -13,6 +13,6 @@ export const recent = query({
       .take(100);
     const names = new Map<string, string>();
     for (const c of calls) if (!names.has(c.appId)) names.set(c.appId, (await ctx.db.get(c.appId))?.name ?? "Removed app");
-    return calls.map(({ _id, appId, tool, ok, error, at }) => ({ _id, app: names.get(appId)!, tool, ok, error: error ?? null, at }));
+    return calls.map(({ _id, appId, tool, ok, error, source, at }) => ({ _id, app: names.get(appId)!, tool, ok, error: error ?? null, source: source ?? null, at }));
   },
 });
