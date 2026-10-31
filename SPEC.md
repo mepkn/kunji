@@ -266,7 +266,7 @@ something worth asking for.
      `migrations:markUsersVerified` (ran on prod 2026-10-26, 1 user; then removed from the repo).
 4. ✔ Browse page, tokens, `/mcp`, Connect page; test with Claude Code.
    Done locally 2026-10-26 (real Claude Code listed karya's tools and called `current_focus` and
-   `list_tickets`); prod deploy pending. Notes:
+   `list_tickets`); live on prod 2026-10-31 (`/mcp` at `https://exciting-echidna-830.convex.site/mcp`). Notes:
    - `/mcp` (`backend/convex/mcp.ts`) follows setu's server: stateless JSON-RPC over POST,
      `initialize`, `ping`, `tools/list`, `tools/call`, batches, notifications → 202, CORS, 401 with
      `WWW-Authenticate: Bearer`. Pure routing/filtering is in `lib/mcp.ts`.
