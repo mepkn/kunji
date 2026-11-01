@@ -123,7 +123,7 @@ Every enabled app with the person's status, from each app's `/kunji/access`:
 
 ```
 ✔ Karya      connected      4 tools   [on]
-✖ Note-shote no account     Sign up at note-shote.pknspace.com →
+✖ Tippani no account     Sign up at tippani.pknspace.com →
 ✖ Alp        not allowed
 ```
 
@@ -169,7 +169,7 @@ something worth asking for.
 | App | Tools | First tools |
 |---|---|---|
 | yaad-dila | ✔ later | `add_reminder`, `list_upcoming`, `snooze_reminder` |
-| note-shote | ✔ later | `create_note`, `search_notes`, `append_to_note` |
+| tippani | ✔ later | `create_note`, `search_notes`, `append_to_note` |
 | chayan | ✔ | `list_lists`, `get_list`, `pick_random`, `add_item` |
 | suchi | ✔ | `list_lists`, `add_to_list`, `get_top` |
 | panna | ✔ | `read_pad`, `append_to_pad` |
@@ -296,7 +296,7 @@ something worth asking for.
    (`../CLAUDE.md` → Convex, rolled out to every app with accounts, tools or not), then copy
    karya's `lib/kunji.ts`, add the tools from "Which apps get tools" (read-only first; writes
    need my OK), register in kunji locally and on prod, test with Claude Code.
-   Order: chayan, yaad-dila, note-shote, suchi, panna, alp, sangyan, bhej, setu (its own MCP
+   Order: chayan, yaad-dila, tippani, suchi, panna, alp, sangyan, bhej, setu (its own MCP
    tools move behind the contract; decide whether setu's own `/mcp` stays).
    - chayan ✔ (2026-10-31): verification + reset by code; tools `list_lists`, `get_list` (read-only),
      `pick_random` (records the pick, shares `pickFrom` with the Pick button) and `add_item`; a list
@@ -324,7 +324,7 @@ something worth asking for.
      Voice moved onto the gateway the same day: `voice.parse` (backend) replaces the on-device Gemini
      call and its key in Settings; kunji errors map to app messages (`noAiKey` → "add your key at
      kunji"). The second app on the gateway after karya.
-   - note-shote ✔ (2026-10-31): verification + reset by code (web sign-in page and mobile auth form);
+   - tippani ✔ (2026-10-31): verification + reset by code (web sign-in page and mobile auth form);
      tools `search_notes`, `get_note` (read-only; the latter added so a model can read a note it found),
      `create_note` and `append_to_note`. Writes share `insertNote` / `appendToNote` with `notes.ts`; nothing
      deletes, archives or rewrites text; append refuses trashed notes. `create_note` takes `tags` as a
@@ -334,9 +334,9 @@ something worth asking for.
      Notes: with `verify` on, Convex Auth passes the raw `params.email` to the verify provider, which
      stored it untrimmed/uppercase on the user (an existing test caught it): `profile()` now writes the
      normalised email back into `params`. Other apps whose clients don't lowercase should do the same.
-     Prod `SITE_URL` was `noteshote://` and became `noteshote://auth` (same as yaad-dila). The app has
+     Prod `SITE_URL` was `noteshote://` and became `noteshote://auth` (now `tippani://auth`, after the rename) (same as yaad-dila). The app has
      `@types/node` but the mobile typecheck has none, so `lib/env.ts` came along too. Only the app-contract
-     half of `lib/kunji.ts` was copied (no gateway client: note-shote has no AI).
+     half of `lib/kunji.ts` was copied (no gateway client: tippani has no AI).
    - suchi ✔ (2026-10-31): verification + reset by code (web sign-in page); tools `list_lists`,
      `get_top` (read-only; a list is named by name, ignoring case, or id; follows the list's mode:
      rank, tier then unplaced, or newest first; `include_done`) and `add_to_list` (shares `insertItem`
@@ -345,19 +345,19 @@ something worth asking for.
      (`https://sensible-mosquito-333.convex.site`); real Claude Code ran all three tools locally and the read-only ones on prod.
      Notes: `lib/kunji.ts` and `otp.ts` read `process.env` directly (the web typecheck has Node
      types), so no `lib/env.ts`. Local site ports move with whichever backends are running: suchi
-     took 3217, which note-shote's local registration also points at. A `!` command with a `re_...`
-     placeholder set note-shote's prod `RESEND_API_KEY` to junk (reset emails failed): give the user
+     took 3217, which tippani's local registration also points at. A `!` command with a `re_...`
+     placeholder set tippani's prod `RESEND_API_KEY` to junk (reset emails failed): give the user
      a script that reads the key from the clipboard, refuses non-`re_` values and never echoes it, and
      check every app's key by length/prefix only.
    - panna ✔ (2026-10-31): verification + reset by code (web sign-in page and mobile auth form, both
-     copied from note-shote, whose screens had the same shape); tools `read_pad` (read-only: text, bytes,
+     copied from tippani, whose screens had the same shape); tools `read_pad` (read-only: text, bytes,
      limit, version, last saved) and `append_to_pad` (adds the text on a new line at the end, creating the
      pad if needed; shares `writePad` with `pad.save`, so the version bump and 100 KB limit match the app;
      refuses empty text and anything over the limit; never replaces or clears). Registered locally
      (`http://127.0.0.1:3211`) and on prod (`https://insightful-chickadee-479.convex.site`); real Claude
      Code ran both tools locally, `read_pad` via Try a tool on prod. Notes: the pad is last-write-wins, so an
      append made while the user is typing (within the 500 ms before their save) can be overwritten; the
-     tool description says so. The mobile typecheck has no Node types: `lib/env.ts` came from note-shote and
+     tool description says so. The mobile typecheck has no Node types: `lib/env.ts` came from tippani and
      `allowlist.ts` now uses it too. Prod `SITE_URL` was already `https://panna.pknspace.com`.
    - alp ✔ (2026-10-31): verification + reset by code (web sign-in page and mobile auth form, copied from
      panna: alp's screens matched panna's pre-change files exactly); tools `list_links` (read-only: optional
