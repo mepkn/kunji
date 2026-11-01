@@ -20,7 +20,7 @@ for the people who use them. The two lists are separate on purpose.
 
 Follows `../CLAUDE.md`: `backend/` (Convex + Convex Auth) and `web/` (Vite + React 19 + TS +
 Tailwind v4 + shadcn/ui on Base UI + React Router), `scripts/check.sh`, `scripts/deploy.sh`.
-Copy the structure from **picki**; copy key encryption and the AI provider clients from
+Copy the structure from **chayan**; copy key encryption and the AI provider clients from
 **karya** (`backend/convex/aiKeys.ts`, `lib/gemini.ts`, `lib/groq.ts`). Deployed at
 `https://kunji.pknspace.com`. Everything runs on Convex (HTTP actions); the VPS serves `web/dist` only.
 
@@ -96,7 +96,7 @@ Authorization: Bearer <app secret>
 ### `/mcp`
 
 - kunji is the only real MCP server (streamable HTTP). It lists tools from the person's enabled
-  apps that have a ✔ account, prefixed by app: `picki__pick_random`, `yaad-dila__add_reminder` (MCP allows dots, but
+  apps that have a ✔ account, prefixed by app: `chayan__pick_random`, `yaad-dila__add_reminder` (MCP allows dots, but
   Claude's API only `[a-zA-Z0-9_-]`; slugs have no `_`, so the first `__` splits).
 - A tool call goes to that app's `/kunji/call` with the person's email (App contract).
 - The tool list per app is cached (refreshed on admin **Refresh** and every 6 hours by a cron, `backend/convex/crons.ts`).
@@ -170,7 +170,7 @@ something worth asking for.
 |---|---|---|
 | yaad-dila | ✔ later | `add_reminder`, `list_upcoming`, `snooze_reminder` |
 | note-shote | ✔ later | `create_note`, `search_notes`, `append_to_note` |
-| picki | ✔ | `list_lists`, `get_list`, `pick_random`, `add_item` |
+| chayan | ✔ | `list_lists`, `get_list`, `pick_random`, `add_item` |
 | suchi | ✔ | `list_lists`, `add_to_list`, `get_top` |
 | panna | ✔ | `read_pad`, `append_to_pad` |
 | alp | ✔ | `shorten_url`, `list_links` |
@@ -208,9 +208,9 @@ something worth asking for.
 
 ## Build order
 
-1. ✔ Scaffold (picki layout), auth with email verification, `ALLOWED_EMAILS`, deploy.
+1. ✔ Scaffold (chayan layout), auth with email verification, `ALLOWED_EMAILS`, deploy.
    Done 2026-10-25, live at https://kunji.pknspace.com (prod Convex `exciting-echidna-830`). Notes:
-   - picki has no email verification, so `backend/convex/otp.ts` (`ResendOTP`, `ResendOTPReset`)
+   - chayan has no email verification, so `backend/convex/otp.ts` (`ResendOTP`, `ResendOTPReset`)
      is new here and calls Resend's API with `fetch` (no `resend` package). Without
      `RESEND_API_KEY` the code is logged instead, so local dev needs no Resend key.
    - `ADMIN_EMAILS` gates `requireAdmin` (`lib/access.ts`); `users.me` returns `{ email, isAdmin }`.
@@ -296,9 +296,9 @@ something worth asking for.
    (`../CLAUDE.md` → Convex, rolled out to every app with accounts, tools or not), then copy
    karya's `lib/kunji.ts`, add the tools from "Which apps get tools" (read-only first; writes
    need my OK), register in kunji locally and on prod, test with Claude Code.
-   Order: picki, yaad-dila, note-shote, suchi, panna, alp, learn, drop, setu (its own MCP
+   Order: chayan, yaad-dila, note-shote, suchi, panna, alp, learn, drop, setu (its own MCP
    tools move behind the contract; decide whether setu's own `/mcp` stays).
-   - picki ✔ (2026-10-31): verification + reset by code; tools `list_lists`, `get_list` (read-only),
+   - chayan ✔ (2026-10-31): verification + reset by code; tools `list_lists`, `get_list` (read-only),
      `pick_random` (records the pick, shares `pickFrom` with the Pick button) and `add_item`; a list
      is named by name or slug. Registered locally (`http://127.0.0.1:3215`) and on prod
      (`https://quaint-magpie-360.convex.site`). Notes: the app had no backend tests, so `vitest`,
