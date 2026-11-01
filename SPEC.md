@@ -174,7 +174,7 @@ something worth asking for.
 | suchi | ✔ | `list_lists`, `add_to_list`, `get_top` |
 | panna | ✔ | `read_pad`, `append_to_pad` |
 | alp | ✔ | `shorten_url`, `list_links` |
-| learn | ✔ | `search_notes`, `get_note`, `add_note`, `append_to_note` |
+| sangyan | ✔ | `search_notes`, `get_note`, `add_note`, `append_to_note` |
 | drop | ✔ | `send_text` (to my devices), `list_drops`, `get_drop`, `set_drop_pinned` |
 | setu | ✔ | its existing MCP tools moved behind the contract |
 | karya | ✔ **first app (reference)**, first gateway user | proposed from its code at step 3; read-only first, writes / Jira / AI need my OK |
@@ -296,7 +296,7 @@ something worth asking for.
    (`../CLAUDE.md` → Convex, rolled out to every app with accounts, tools or not), then copy
    karya's `lib/kunji.ts`, add the tools from "Which apps get tools" (read-only first; writes
    need my OK), register in kunji locally and on prod, test with Claude Code.
-   Order: chayan, yaad-dila, note-shote, suchi, panna, alp, learn, drop, setu (its own MCP
+   Order: chayan, yaad-dila, note-shote, suchi, panna, alp, sangyan, drop, setu (its own MCP
    tools move behind the contract; decide whether setu's own `/mcp` stays).
    - chayan ✔ (2026-10-31): verification + reset by code; tools `list_lists`, `get_list` (read-only),
      `pick_random` (records the pick, shares `pickFrom` with the Pick button) and `add_item`; a list
@@ -370,7 +370,7 @@ something worth asking for.
      `find` in Chrome echoed the prod secret again: rotated at once and set from the clipboard after
      locating the copy button with `getBoundingClientRect` (JS-clicking it wouldn't reach the clipboard).
      Never use `find`/`read_page` on a page showing a secret. Prod `SITE_URL` was already `https://alp.pknspace.com`.
-   - learn ✔ (2026-10-31): verification + reset by code (web sign-in page, learn's own look with suchi's steps);
+   - sangyan ✔ (2026-10-31): verification + reset by code (web sign-in page, sangyan's own look with suchi's steps);
      tools `search_notes`, `get_note` (read-only), `add_note` and `append_to_note`. The notes are one shared tree
      (public reads), so the tools see every page; kunji still needs a verified, allowlisted user. Search uses two
      new search indexes (page titles, then page text) and returns each page's path, a snippet and its link;
@@ -379,13 +379,13 @@ something worth asking for.
      `insertNode` / `writePage` with `nodes.create` / `nodes.save`; nothing renames, moves or deletes, and an
      append is lost if the page is open with unsaved edits (description says so). Registered locally
      (`http://127.0.0.1:3213`) and on prod (`https://usable-orca-255.convex.site`); real Claude Code ran all four
-     tools locally, `search_notes` and `get_note` via Try a tool on prod. Notes: learn's local backend was still
+     tools locally, `search_notes` and `get_note` via Try a tool on prod. Notes: sangyan's local backend was still
      *linked*; converted to `anonymous-learn` first. It had no backend tests: vitest, convex-test and
      `test.helpers.ts` came from suchi. Claude in Chrome's screenshot frame isn't always CSS pixels (locally
      ×1.097, so clicks at `getBoundingClientRect` coordinates missed the copy button): calibrate with a capture-phase
      click listener that logs `clientX/Y`, and wrap `navigator.clipboard.writeText` to record only whether it was
-     called with a `kjs_` value, before reading the clipboard. Prod `SITE_URL` was already `https://learn.pknspace.com`.
-   - drop ✔ (2026-10-31): verification + reset by code (web sign-in page, drop's own card with learn's steps);
+     called with a `kjs_` value, before reading the clipboard. Prod `SITE_URL` was already set.
+   - drop ✔ (2026-10-31): verification + reset by code (web sign-in page, drop's own card with sangyan's steps);
      tools `list_drops` (read-only: ready drops newest first, optional `kind`, `limit` 1–50; text preview or file
      name/size/type), `get_drop` (read-only: a whole text, or a file's 24-hour download link signed with the existing
      `lib/tickets.ts`; `blobstore/` untouched, the file itself is never returned), `send_text` (shares `insertText`
