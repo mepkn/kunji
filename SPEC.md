@@ -175,7 +175,7 @@ something worth asking for.
 | panna | ✔ | `read_pad`, `append_to_pad` |
 | alp | ✔ | `shorten_url`, `list_links` |
 | sangyan | ✔ | `search_notes`, `get_note`, `add_note`, `append_to_note` |
-| drop | ✔ | `send_text` (to my devices), `list_drops`, `get_drop`, `set_drop_pinned` |
+| bhej | ✔ | `send_text` (to my devices), `list_drops`, `get_drop`, `set_drop_pinned` |
 | setu | ✔ | its existing MCP tools moved behind the contract |
 | karya | ✔ **first app (reference)**, first gateway user | proposed from its code at step 3; read-only first, writes / Jira / AI need my OK |
 | niji, pralekh | ✖ | end-to-end encrypted: the server cannot read the data, by design |
@@ -296,7 +296,7 @@ something worth asking for.
    (`../CLAUDE.md` → Convex, rolled out to every app with accounts, tools or not), then copy
    karya's `lib/kunji.ts`, add the tools from "Which apps get tools" (read-only first; writes
    need my OK), register in kunji locally and on prod, test with Claude Code.
-   Order: chayan, yaad-dila, note-shote, suchi, panna, alp, sangyan, drop, setu (its own MCP
+   Order: chayan, yaad-dila, note-shote, suchi, panna, alp, sangyan, bhej, setu (its own MCP
    tools move behind the contract; decide whether setu's own `/mcp` stays).
    - chayan ✔ (2026-10-31): verification + reset by code; tools `list_lists`, `get_list` (read-only),
      `pick_random` (records the pick, shares `pickFrom` with the Pick button) and `add_item`; a list
@@ -385,7 +385,7 @@ something worth asking for.
      ×1.097, so clicks at `getBoundingClientRect` coordinates missed the copy button): calibrate with a capture-phase
      click listener that logs `clientX/Y`, and wrap `navigator.clipboard.writeText` to record only whether it was
      called with a `kjs_` value, before reading the clipboard. Prod `SITE_URL` was already set.
-   - drop ✔ (2026-10-31): verification + reset by code (web sign-in page, drop's own card with sangyan's steps);
+   - bhej (then drop) ✔ (2026-10-31): verification + reset by code (web sign-in page, its own card with sangyan's steps);
      tools `list_drops` (read-only: ready drops newest first, optional `kind`, `limit` 1–50; text preview or file
      name/size/type), `get_drop` (read-only: a whole text, or a file's 24-hour download link signed with the existing
      `lib/tickets.ts`; `blobstore/` untouched, the file itself is never returned), `send_text` (shares `insertText`
@@ -393,10 +393,10 @@ something worth asking for.
      `setDropPinned` with `drops.setPinned`, so unpinning restarts the 7-day clock; returns `changed`). Nothing
      deletes drops or uploads files; other users' drops and unfinished uploads look like missing ids. Registered
      locally (`http://127.0.0.1:3213`) and on prod (`https://wary-mule-895.convex.site`); real Claude Code ran all
-     four tools locally, `list_drops` and `get_drop` via Try a tool on prod. Notes: drop's local backend was still
+     four tools locally, `list_drops` and `get_drop` via Try a tool on prod. Notes: its local backend was still
      *linked*; converted to `anonymous-drop` first (it was empty). Backend tests already used vitest; convex-test was
-     added. Screenshot frame was again ×1.097 locally and 1:1 on prod. Prod `SITE_URL` was already
-     `https://drop.pknspace.com`.
+     added. Screenshot frame was again ×1.097 locally and 1:1 on prod. Prod `SITE_URL` was already set (then
+     `https://drop.pknspace.com`; `https://bhej.pknspace.com` since the 2026-11-02 rename).
    - setu ✔ (2026-10-31, the last app in the order): verification + reset by code (web sign-in page in setu's
      own look); its own MCP tools moved behind the contract with the same names and results: `list_projects`,
      `list_folders`, `search_endpoints`, `get_endpoint`, `list_changes`, all read-only (queries moved from `mcp.ts`
