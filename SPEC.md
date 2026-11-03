@@ -179,7 +179,7 @@ something worth asking for.
 | setu | ✔ | its existing MCP tools moved behind the contract |
 | karya | ✔ **first app (reference)**, first gateway user | proposed from its code at step 3; read-only first, writes / Jira / AI need my OK |
 | niji, pralekh | ✖ | end-to-end encrypted: the server cannot read the data, by design |
-| dash, class, syntax-party | ✖ | showcase / live classroom / reference content |
+| dash, class, lipi | ✖ | showcase / live classroom / reference content |
 | Desktop apps, static apps | ✖ | no cloud backend |
 
 ## Security
