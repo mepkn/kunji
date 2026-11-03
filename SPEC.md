@@ -96,7 +96,7 @@ Authorization: Bearer <app secret>
 ### `/mcp`
 
 - kunji is the only real MCP server (streamable HTTP). It lists tools from the person's enabled
-  apps that have a ✔ account, prefixed by app: `chayan__pick_random`, `yaad-dila__add_reminder` (MCP allows dots, but
+  apps that have a ✔ account, prefixed by app: `chayan__pick_random`, `suchna__add_reminder` (MCP allows dots, but
   Claude's API only `[a-zA-Z0-9_-]`; slugs have no `_`, so the first `__` splits).
 - A tool call goes to that app's `/kunji/call` with the person's email (App contract).
 - The tool list per app is cached (refreshed on admin **Refresh** and every 6 hours by a cron, `backend/convex/crons.ts`).
@@ -168,7 +168,7 @@ something worth asking for.
 
 | App | Tools | First tools |
 |---|---|---|
-| yaad-dila | ✔ later | `add_reminder`, `list_upcoming`, `snooze_reminder` |
+| suchna | ✔ later | `add_reminder`, `list_upcoming`, `snooze_reminder` |
 | tippani | ✔ later | `create_note`, `search_notes`, `append_to_note` |
 | chayan | ✔ | `list_lists`, `get_list`, `pick_random`, `add_item` |
 | suchi | ✔ | `list_lists`, `add_to_list`, `get_top` |
@@ -296,7 +296,7 @@ something worth asking for.
    (`../CLAUDE.md` → Convex, rolled out to every app with accounts, tools or not), then copy
    karya's `lib/kunji.ts`, add the tools from "Which apps get tools" (read-only first; writes
    need my OK), register in kunji locally and on prod, test with Claude Code.
-   Order: chayan, yaad-dila, tippani, suchi, panna, alp, sangyan, bhej, setu (its own MCP
+   Order: chayan, suchna, tippani, suchi, panna, alp, sangyan, bhej, setu (its own MCP
    tools move behind the contract; decide whether setu's own `/mcp` stays).
    - chayan ✔ (2026-10-31): verification + reset by code; tools `list_lists`, `get_list` (read-only),
      `pick_random` (records the pick, shares `pickFrom` with the Pick button) and `add_item`; a list
@@ -306,7 +306,7 @@ something worth asking for.
      both kunji and the web UI show their message. Don't read a deployment URL by grepping
      `dist/` for `convex.cloud`: a library holds a `happy-otter-123` placeholder. Use the
      `convex env set --prod` output (it names the deployment) instead.
-   - yaad-dila ✔ (2026-10-31): verification + reset by code (mobile sign-in screen, English and Hindi);
+   - suchna ✔ (2026-10-31): verification + reset by code (mobile sign-in screen, English and Hindi);
      tools `list_upcoming`, `search_reminders` (read-only; the latter added so a model can find a
      reminder's id), `add_reminder`, `snooze_reminder` and `set_reminder_active` (pause/resume, also
      added). Writes share `insertReminder` / `setReminderActive` with the app's own mutations; the
@@ -316,7 +316,7 @@ something worth asking for.
      Registered locally (`http://127.0.0.1:3211`) and on prod (`https://formal-setter-463.convex.site`).
      Notes: the app has no Node types, so `lib/env.ts` reads `process.env` for `otp.ts` and
      `lib/kunji.ts`. `SITE_URL=yaaddila://` broke code emails (Convex Auth strips the trailing `/`
-     and can't build the link): now `yaaddila://auth`. Its local backend is anonymous and the CLI
+     and can't build the link): now `yaaddila://auth` (`suchna://auth` after the rename). Its local backend is anonymous and the CLI
      isn't linked to the project, so `--prod` silently targets local: use the deploy key from
      `backend/.env.prod.local` with `CONVEX_DEPLOYMENT=` empty. `find` in Chrome echoes shown-once
      secrets; copy them with the page's copy button and `pbpaste` instead (prod secret rotated once
@@ -334,7 +334,7 @@ something worth asking for.
      Notes: with `verify` on, Convex Auth passes the raw `params.email` to the verify provider, which
      stored it untrimmed/uppercase on the user (an existing test caught it): `profile()` now writes the
      normalised email back into `params`. Other apps whose clients don't lowercase should do the same.
-     Prod `SITE_URL` was `noteshote://` and became `noteshote://auth` (now `tippani://auth`, after the rename) (same as yaad-dila). The app has
+     Prod `SITE_URL` was `noteshote://` and became `noteshote://auth` (now `tippani://auth`, after the rename) (same as suchna). The app has
      `@types/node` but the mobile typecheck has none, so `lib/env.ts` came along too. Only the app-contract
      half of `lib/kunji.ts` was copied (no gateway client: tippani has no AI).
    - suchi ✔ (2026-10-31): verification + reset by code (web sign-in page); tools `list_lists`,
